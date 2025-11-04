@@ -1,0 +1,81 @@
+{
+  "id": "56688254-4deb-4609-a7fe-cd38c13470e5",
+  "creationTime": "11/04/2025 13:51:46 +00:00",
+  "template": "app",
+  "versions": {
+    "AbpFramework": "9.3.6",
+    "AbpStudio": "1.4.2",
+    "TargetDotnetFramework": "net9.0"
+  },
+  "modules": {
+    "SpaApp": {
+      "path": "SpaApp.abpmdl",
+      "folder": "main"
+    }
+  },
+  "runProfiles": {
+    "Default": {
+      "path": "etc/abp-studio/run-profiles/Default.abprun.json"
+    }
+  },
+  "options": {
+    "httpRequests": {
+      "ignoredUrls": []
+    }
+  },
+  "creatingStudioConfiguration": {
+    "template": "app",
+    "createdAbpStudioVersion": "1.4.2",
+    "tiered": "false",
+    "runInstallLibs": "true",
+    "useLocalReferences": "false",
+    "multiTenancy": "true",
+    "includeTests": "true",
+    "kubernetesConfiguration": "false",
+    "uiFramework": "angular",
+    "mobileFramework": "none",
+    "distributedEventBus": "none",
+    "databaseProvider": "ef",
+    "runDbMigrator": "true",
+    "databaseManagementSystem": "sqlserver",
+    "separateTenantSchema": "false",
+    "createInitialMigration": "true",
+    "theme": "leptonx-lite",
+    "themeStyle": "",
+    "themeMenuPlacement": "",
+    "progressiveWebApp": "false",
+    "runProgressiveWebAppSupport": "false",
+    "publicWebsite": "false",
+    "socialLogin": "false",
+    "selectedLanguages": [
+      "English",
+      "Arabic",
+      "Chinese (Simplified)",
+      "Chinese (Traditional)",
+      "Czech",
+      "English (United Kingdom)",
+      "Finnish",
+      "French",
+      "German (Germany)",
+      "Hindi ",
+      "Hungarian",
+      "Icelandic",
+      "Italian",
+      "Portuguese (Brazil)",
+      "Romanian (Romania)",
+      "Russian",
+      "Slovak",
+      "Spanish",
+      "Swedish",
+      "Turkish"
+    ],
+    "defaultLanguage": "English",
+    "createCommand": "abp new SpaApp -t app --ui-framework angular --database-provider ef --database-management-system sqlserver --theme leptonx-lite --without-cms-kit --sample-crud-page --dont-run-bundling --no-social-logins -no-gdpr -no-openiddict-admin-ui -no-audit-logging -no-file-management -no-language-management -no-text-template-management"
+  },
+  "folders": {
+    "items": {
+      "main": {},
+      "modules": {}
+    }
+  }
+}
