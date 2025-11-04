@@ -446,14 +446,17 @@ namespace SpaApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AppBooks",
+                name: "AppComments",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false),
-                    PublishDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Price = table.Column<float>(type: "real", nullable: false),
+                    ParentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    UserName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    Homepage = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    Text = table.Column<string>(type: "nvarchar(2048)", maxLength: 2048, nullable: false),
+                    FilePath = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
+                    FileType = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(40)", maxLength: 40, nullable: false),
                     CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -463,7 +466,12 @@ namespace SpaApp.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AppBooks", x => x.Id);
+                    table.PrimaryKey("PK_AppComments", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AppComments_AppComments_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "AppComments",
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -1100,6 +1108,11 @@ namespace SpaApp.Migrations
                 column: "UserName");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AppComments_ParentId",
+                table: "AppComments",
+                column: "ParentId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictApplications_ClientId",
                 table: "OpenIddictApplications",
                 column: "ClientId");
@@ -1212,7 +1225,7 @@ namespace SpaApp.Migrations
                 name: "AbpUserTokens");
 
             migrationBuilder.DropTable(
-                name: "AppBooks");
+                name: "AppComments");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictScopes");

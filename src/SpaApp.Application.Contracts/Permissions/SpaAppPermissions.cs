@@ -5,9 +5,9 @@ public static class SpaAppPermissions
     public const string GroupName = "SpaApp";
 
 
-    public static class Books
+    public static class Comments
     {
-        public const string Default = GroupName + ".Books";
+        public const string Default = GroupName + ".Comments";
         public const string Create = Default + ".Create";
         public const string Edit = Default + ".Edit";
         public const string Delete = Default + ".Delete";

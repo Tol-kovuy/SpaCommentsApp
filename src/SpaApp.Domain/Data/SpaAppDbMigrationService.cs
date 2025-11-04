@@ -1,17 +1,19 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using OpenIddict.Abstractions;
+using SpaApp.MultiTenancy;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Volo.Abp.Data;
 using Volo.Abp.DependencyInjection;
 using Volo.Abp.Identity;
 using Volo.Abp.MultiTenancy;
-using SpaApp.MultiTenancy;
 using Volo.Abp.TenantManagement;
 
 namespace SpaApp.Data;
@@ -57,7 +59,7 @@ public class SpaAppDbMigrationService : ITransientDependency
 
         if (MultiTenancyConsts.IsEnabled)
         {
-            
+
             var tenants = await _tenantRepository.GetListAsync(includeDetails: true);
 
             var migratedDatabaseSchemas = new HashSet<string>();
@@ -94,7 +96,7 @@ public class SpaAppDbMigrationService : ITransientDependency
     {
         Logger.LogInformation(
             $"Migrating schema for {(tenant == null ? "host" : tenant.Name + " tenant")} database...");
-        
+
         foreach (var migrator in _dbSchemaMigrators)
         {
             await migrator.MigrateAsync();
@@ -104,7 +106,7 @@ public class SpaAppDbMigrationService : ITransientDependency
     private async Task SeedDataAsync(Tenant? tenant = null)
     {
         Logger.LogInformation($"Executing {(tenant == null ? "host" : tenant.Name + " tenant")} database seed...");
-        
+
         await _dataSeeder.SeedAsync(new DataSeedContext(tenant?.Id)
             .WithProperty(IdentityDataSeedContributor.AdminEmailPropertyName,
                 SpaAppConsts.AdminEmailDefaultValue)
@@ -222,5 +224,92 @@ public class SpaAppDbMigrationService : ITransientDependency
         }
 
         return null;
+    }
+
+    private async Task CreateClientsAsync()
+    {
+        // Получаем менеджер клиентов OpenIddict
+        var scope = _currentTenant as IServiceProvider ??
+                    (IServiceProvider)AppDomain.CurrentDomain.GetData("IServiceProvider");
+
+        if (scope == null)
+        {
+            Logger.LogWarning("Cannot resolve service provider to create OpenIddict clients.");
+            return;
+        }
+
+        var sp = scope.CreateScope().ServiceProvider;
+        var applicationManager = sp.GetRequiredService<IOpenIddictApplicationManager>();
+
+        // === Swagger клиент ===
+        await CreateClientAsync(
+            applicationManager,
+            name: "SpaApp_Swagger",
+            displayName: "Swagger UI",
+            scopes: new[] { "SpaApp" },
+            grantTypes: new[] { "password", "client_credentials" },
+            secret: "1q2w3e*"
+        );
+
+        // === Angular клиент ===
+        await CreateClientAsync(
+            applicationManager,
+            name: "SpaApp_App",
+            displayName: "Angular SPA",
+            scopes: new[] { "SpaApp" },
+            grantTypes: new[] { "authorization_code", "refresh_token", "implicit" },
+            redirectUris: new[] { "http://localhost:4200" },
+            postLogoutRedirectUris: new[] { "http://localhost:4200" },
+            corsOrigins: new[] { "http://localhost:4200" }
+        );
+    }
+
+    private static async Task CreateClientAsync(
+        IOpenIddictApplicationManager applicationManager,
+        string name,
+        string displayName,
+        string[] scopes,
+        string[] grantTypes,
+        string? secret = null,
+        string[]? redirectUris = null,
+        string[]? postLogoutRedirectUris = null,
+        string[]? corsOrigins = null)
+    {
+        if (await applicationManager.FindByClientIdAsync(name) != null)
+            return;
+
+        var descriptor = new OpenIddictApplicationDescriptor
+        {
+            ClientId = "swagger",
+            ClientSecret = "swagger-secret",
+            DisplayName = "Swagger UI",
+            RedirectUris =
+              {
+                  new Uri("https://localhost:5001/swagger/oauth2-redirect.html")
+              },
+                      Permissions =
+              {
+                  OpenIddictConstants.Permissions.Endpoints.Authorization,
+                  OpenIddictConstants.Permissions.Endpoints.Token,
+                  OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
+                  OpenIddictConstants.Permissions.ResponseTypes.Code,
+                  OpenIddictConstants.Permissions.Scopes.Email,
+                  OpenIddictConstants.Permissions.Scopes.Profile
+              }
+        };
+
+        var grantTypeMap = new Dictionary<string, string>
+        {
+            ["authorization_code"] = OpenIddictConstants.Permissions.GrantTypes.AuthorizationCode,
+            ["refresh_token"] = OpenIddictConstants.Permissions.GrantTypes.RefreshToken,
+            ["client_credentials"] = OpenIddictConstants.Permissions.GrantTypes.ClientCredentials,
+            ["password"] = OpenIddictConstants.Permissions.GrantTypes.Password
+        };
+
+        foreach (var grantType in grantTypes)
+        {
+            if (grantTypeMap.TryGetValue(grantType, out var permission))
+                descriptor.Permissions.Add(permission);
+        }
     }
 }

@@ -1,6 +1,7 @@
-using Microsoft.EntityFrameworkCore;
-using Volo.Abp.AuditLogging.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using SpaApp.Books;
+using SpaApp.Comments;
+using Volo.Abp.AuditLogging.EntityFrameworkCore;
 using Volo.Abp.BackgroundJobs.EntityFrameworkCore;
 using Volo.Abp.BlobStoring.Database.EntityFrameworkCore;
 using Volo.Abp.Data;
@@ -10,9 +11,9 @@ using Volo.Abp.EntityFrameworkCore.Modeling;
 using Volo.Abp.FeatureManagement.EntityFrameworkCore;
 using Volo.Abp.Identity;
 using Volo.Abp.Identity.EntityFrameworkCore;
+using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.PermissionManagement.EntityFrameworkCore;
 using Volo.Abp.SettingManagement.EntityFrameworkCore;
-using Volo.Abp.OpenIddict.EntityFrameworkCore;
 using Volo.Abp.TenantManagement;
 using Volo.Abp.TenantManagement.EntityFrameworkCore;
 
@@ -28,7 +29,7 @@ public class SpaAppDbContext :
 {
     /* Add DbSet properties for your Aggregate Roots / Entities here. */
 
-    public DbSet<Book> Books { get; set; }
+    public DbSet<Comment> Books { get; set; }
 
     #region Entities from the modules
 
@@ -80,15 +81,25 @@ public class SpaAppDbContext :
         builder.ConfigureOpenIddict();
         builder.ConfigureTenantManagement();
         builder.ConfigureBlobStoring();
-        
-        builder.Entity<Book>(b =>
+
+        builder.Entity<Comment>(b =>
         {
-            b.ToTable(SpaAppConsts.DbTablePrefix + "Books",
-                SpaAppConsts.DbSchema);
-            b.ConfigureByConvention(); //auto configure for the base class props
-            b.Property(x => x.Name).IsRequired().HasMaxLength(128);
+            b.ToTable(SpaAppConsts.DbTablePrefix + "Comments", SpaAppConsts.DbSchema);
+            b.ConfigureByConvention();
+
+            b.Property(x => x.UserName).IsRequired().HasMaxLength(128);
+            b.Property(x => x.Email).IsRequired().HasMaxLength(256);
+            b.Property(x => x.Text).IsRequired().HasMaxLength(2048);
+            b.Property(x => x.Homepage).HasMaxLength(256);
+            b.Property(x => x.FilePath).HasMaxLength(512);
+            b.Property(x => x.FileType).HasMaxLength(128);
+
+            // связь для иерархии комментариев (Parent → Replies)
+            b.HasOne(x => x.Parent)
+                .WithMany(x => x.Replies)
+                .HasForeignKey(x => x.ParentId);
         });
-        
+
         /* Configure your own tables/entities inside here */
 
         //builder.Entity<YourEntity>(b =>

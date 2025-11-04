@@ -271,7 +271,10 @@ public class SpaAppHttpApiHostModule : AbpModule
             options.SwaggerEndpoint("/swagger/v1/swagger.json", "SpaApp API");
 
             var configuration = context.ServiceProvider.GetRequiredService<IConfiguration>();
+
             options.OAuthClientId(configuration["AuthServer:SwaggerClientId"]);
+            options.OAuthScopes("SpaApp");
+            options.OAuthUsePkce();
         });
         app.UseAuditing();
         app.UseAbpSerilogEnrichers();

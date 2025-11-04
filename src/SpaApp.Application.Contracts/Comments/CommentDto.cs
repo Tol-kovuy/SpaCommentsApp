@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+using Volo.Abp.Application.Dtos;
+
+namespace SpaApp.Books;
+
+public class CommentDto : AuditedEntityDto<Guid>
+{
+    public Guid? ParentId { get; set; }
+
+    public string UserName { get; set; } = default!;
+    public string Email { get; set; } = default!;
+    public string? Homepage { get; set; }
+    public string Text { get; set; } = default!;
+    public string? FilePath { get; set; }
+    public string? FileType { get; set; }
+    public List<CommentDto> Replies { get; set; } = new();
+}
