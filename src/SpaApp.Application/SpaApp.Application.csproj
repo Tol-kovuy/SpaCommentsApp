@@ -21,12 +21,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+    <PackageReference Include="Volo.Abp.AspNetCore.Mvc" Version="9.3.6" />
     <PackageReference Include="Volo.Abp.PermissionManagement.Application" Version="9.3.6" />
     <PackageReference Include="Volo.Abp.FeatureManagement.Application" Version="9.3.6" />
     <PackageReference Include="Volo.Abp.SettingManagement.Application" Version="9.3.6" />
     <PackageReference Include="Volo.Abp.Account.Application" Version="9.3.6" />
     <PackageReference Include="Volo.Abp.Identity.Application" Version="9.3.6" />
     <PackageReference Include="Volo.Abp.TenantManagement.Application" Version="9.3.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Comments\" />
   </ItemGroup>
 
 </Project>

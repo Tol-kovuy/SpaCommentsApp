@@ -1,0 +1,108 @@
+<div class="comment-form-container">
+  <h3>Add Comment</h3>
+
+  <form class="comment-form" [formGroup]="commentForm" (ngSubmit)="onSubmit()">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="userName">User Name *</label>
+        <input type="text"
+               id="userName"
+               class="form-control"
+               formControlName="userName"
+               [disabled]="isSubmitting"
+               required>
+        <div *ngIf="commentForm.get('userName')?.invalid && commentForm.get('userName')?.touched" class="error-message">
+          User name is required and must contain only letters and numbers
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email *</label>
+        <input type="email"
+               id="email"
+               class="form-control"
+               formControlName="email"
+               [disabled]="isSubmitting"
+               required>
+        <div *ngIf="commentForm.get('email')?.invalid && commentForm.get('email')?.touched" class="error-message">
+          Valid email is required
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="homepage">Homepage</label>
+        <input type="url"
+               id="homepage"
+               class="form-control"
+               formControlName="homepage"
+               [disabled]="isSubmitting">
+        <div *ngIf="commentForm.get('homepage')?.invalid && commentForm.get('homepage')?.touched" class="error-message">
+          Please enter a valid URL
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="text">Text *</label>
+      <textarea id="text"
+                class="form-control"
+                rows="5"
+                formControlName="text"
+                [disabled]="isSubmitting"
+                required></textarea>
+      <div *ngIf="commentForm.get('text')?.invalid && commentForm.get('text')?.touched" class="error-message">
+        Comment text is required
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>File Attachment</label>
+      <div class="file-upload">
+        <input type="file"
+               id="file"
+               #fileInput
+               (change)="onFileSelected($event)"
+               [disabled]="isSubmitting"
+               style="display: none">
+        <button type="button" class="btn-file" (click)="fileInput.click()" [disabled]="isSubmitting">
+          Choose File
+        </button>
+        <span class="file-name" id="fileName">No file chosen</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>CAPTCHA *</label>
+      <div class="captcha-section">
+        <app-captcha></app-captcha>
+        <input type="text"
+               class="form-control"
+               formControlName="captcha"
+               placeholder="Enter CAPTCHA text"
+               [disabled]="isSubmitting"
+               required>
+        <div *ngIf="commentForm.get('captcha')?.invalid && commentForm.get('captcha')?.touched" class="error-message">
+          CAPTCHA is required
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn-preview" (click)="togglePreview()" [disabled]="isSubmitting">
+        {{ showPreview ? 'Hide Preview' : 'Show Preview' }}
+      </button>
+      <button type="submit" class="btn-submit" [disabled]="commentForm.invalid || isSubmitting">
+        {{ isSubmitting ? 'Submitting...' : 'Submit Comment' }}
+      </button>
+    </div>
+  </form>
+
+  <!-- Preview Section -->
+  <div *ngIf="showPreview && commentForm.valid" class="preview-section">
+    <h4>Preview</h4>
+    <div class="preview-content">
+      <strong>{{ commentForm.get('userName')?.value || 'Anonymous' }}</strong>
+      <p>{{ commentForm.get('text')?.value }}</p>
+    </div>
+  </div>
+</div>

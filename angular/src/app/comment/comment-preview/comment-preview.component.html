@@ -1,0 +1,10 @@
+<div class="comment-preview" *ngIf="commentData">
+  <h4>Comment Preview</h4>
+  <div class="preview-content">
+    <div class="preview-header">
+      <strong>{{commentData.userName || 'User Name'}}</strong>
+      <span>{{commentData.email || 'email@example.com'}}</span>
+    </div>
+    <div class="preview-text">{{commentData.text || 'No text provided'}}</div>
+  </div>
+</div>

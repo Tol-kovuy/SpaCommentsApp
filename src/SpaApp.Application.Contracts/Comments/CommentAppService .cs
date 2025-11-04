@@ -1,18 +1,23 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
 using SpaApp.Permissions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Threading.Tasks;
+using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
-using SpaApp.Comments;
 
 namespace SpaApp.Comments;
 
 [Authorize(SpaAppPermissions.Comments.Default)]
+[RemoteService(Name = "Default")]
+[Route("api/app/comment")]
 public class CommentAppService :
     CrudAppService<Comment, CommentDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateCommentDto>,
     ICommentAppService
@@ -59,7 +64,6 @@ public class CommentAppService :
 
         commentDto.Replies = ObjectMapper.Map<List<Comment>, List<CommentDto>>(replies);
 
-        // Рекурсивно загружаем ответы для каждого ответа
         foreach (var reply in commentDto.Replies)
         {
             await LoadRepliesAsync(reply);
@@ -69,12 +73,29 @@ public class CommentAppService :
     [Authorize(SpaAppPermissions.Comments.Create)]
     public override async Task<CommentDto> CreateAsync(CreateUpdateCommentDto input)
     {
-        // TODO: Добавить валидацию CAPTCHA
-        // TODO: Добавить обработку файлов
-        // TODO: Добавить сбор информации о пользователе (IP, браузер)
+        try
+        {
+            Logger.LogInformation("Creating comment: {UserName}, {Email}, {Text}",
+                input.UserName, input.Email, input.Text);
 
-        var comment = ObjectMapper.Map<CreateUpdateCommentDto, Comment>(input);
-        await _repository.InsertAsync(comment, autoSave: true);
-        return ObjectMapper.Map<Comment, CommentDto>(comment);
+            // TODO: Добавить валидацию CAPTCHA
+            // TODO: Добавить обработку файлов
+            // TODO: Добавить сбор информации о пользователе (IP, браузер)
+
+            var comment = ObjectMapper.Map<CreateUpdateCommentDto, Comment>(input);
+
+            Logger.LogInformation("Mapped to entity: {Entity}", comment);
+
+            await _repository.InsertAsync(comment, autoSave: true);
+
+            Logger.LogInformation("Comment created with ID: {Id}", comment.Id);
+
+            return ObjectMapper.Map<Comment, CommentDto>(comment);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error creating comment: {Message}", ex.Message);
+            throw;
+        }
     }
 }

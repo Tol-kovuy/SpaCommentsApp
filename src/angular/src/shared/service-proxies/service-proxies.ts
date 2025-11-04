@@ -6115,12 +6115,11 @@ export interface ICommentDto {
 
 export class CreateUpdateCommentDto implements ICreateUpdateCommentDto {
     parentId?: string | undefined;
-    userName!: string;
-    email!: string;
+    userName?: string | undefined;
+    email?: string | undefined;
     homepage?: string | undefined;
-    text!: string;
-    filePath?: string | undefined;
-    fileType?: string | undefined;
+    text?: string | undefined;
+    captcha?: string | undefined;
 
     constructor(data?: ICreateUpdateCommentDto) {
         if (data) {
@@ -6138,8 +6137,7 @@ export class CreateUpdateCommentDto implements ICreateUpdateCommentDto {
             this.email = _data["email"];
             this.homepage = _data["homepage"];
             this.text = _data["text"];
-            this.filePath = _data["filePath"];
-            this.fileType = _data["fileType"];
+            this.captcha = _data["captcha"];
         }
     }
 
@@ -6157,20 +6155,18 @@ export class CreateUpdateCommentDto implements ICreateUpdateCommentDto {
         data["email"] = this.email;
         data["homepage"] = this.homepage;
         data["text"] = this.text;
-        data["filePath"] = this.filePath;
-        data["fileType"] = this.fileType;
+        data["captcha"] = this.captcha;
         return data;
     }
 }
 
 export interface ICreateUpdateCommentDto {
     parentId?: string | undefined;
-    userName: string;
-    email: string;
+    userName?: string | undefined;
+    email?: string | undefined;
     homepage?: string | undefined;
-    text: string;
-    filePath?: string | undefined;
-    fileType?: string | undefined;
+    text?: string | undefined;
+    captcha?: string | undefined;
 }
 
 export class ChangePasswordInput implements IChangePasswordInput {

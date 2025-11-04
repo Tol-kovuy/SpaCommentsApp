@@ -8,6 +8,10 @@ export const APP_ROUTES: Routes = [
     loadComponent: () => import('./home/home.component').then(c => c.HomeComponent),
   },
   {
+    path: 'comments',
+    loadComponent: () => import('./comment/comment-list/comment-list.component').then(c => c.CommentListComponent),
+  },
+  {
     path: 'account',
     loadChildren: () => import('@abp/ng.account').then(c => c.createRoutes()),
   },
@@ -22,9 +26,5 @@ export const APP_ROUTES: Routes = [
   {
     path: 'setting-management',
     loadChildren: () => import('@abp/ng.setting-management').then(c => c.createRoutes()),
-  },
-  {
-    path: 'comments',
-    loadChildren: () => import('./comment/comment-module').then(m => m.CommentModule)
   }
 ];
