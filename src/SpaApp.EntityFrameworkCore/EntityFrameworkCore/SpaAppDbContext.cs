@@ -29,7 +29,7 @@ public class SpaAppDbContext :
 {
     /* Add DbSet properties for your Aggregate Roots / Entities here. */
 
-    public DbSet<Comment> Books { get; set; }
+    public DbSet<Comment> Comments { get; set; }
 
     #region Entities from the modules
 

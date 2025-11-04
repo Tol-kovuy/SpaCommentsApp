@@ -1,0 +1,21 @@
+{
+  "runtime": "Default",
+  "documentGenerator": {
+    "fromDocument": {
+      "url": "https://localhost:44328/swagger/v1/swagger.json"
+    }
+  },
+  "codeGenerators": {
+    "openApiToTypeScriptClient": {
+      "className": "{controller}ServiceProxy",
+      "template": "Angular",
+      "promiseType": "Promise",
+      "httpClass": "HttpClient",
+      "rxJsVersion": 7.0,
+      "dateTimeType": "String",
+      "generateClientClasses": true,
+      "generateDtoTypes": true,
+      "output": "../angular/src/shared/service-proxies/service-proxies.ts"
+    }
+  }
+}

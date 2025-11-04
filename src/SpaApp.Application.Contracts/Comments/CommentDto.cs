@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using Volo.Abp.Application.Dtos;
 
-namespace SpaApp.Books;
+namespace SpaApp.Comments;
 
 public class CommentDto : AuditedEntityDto<Guid>
 {
     public Guid? ParentId { get; set; }
-
     public string UserName { get; set; } = default!;
     public string Email { get; set; } = default!;
     public string? Homepage { get; set; }
