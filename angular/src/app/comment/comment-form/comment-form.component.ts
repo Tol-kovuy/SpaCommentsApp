@@ -1,16 +1,28 @@
+import {
+  FormGroup,
+  FormBuilder,
+  Validators,
+  FormsModule,
+  ReactiveFormsModule
+} from '@angular/forms';
+import { Component, EventEmitter, Output, OnInit, ViewChild, ElementRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { CaptchaComponent } from '../captcha/captcha.component';
+import {
+  LocalizationPipe,
+  LocalizationService 
+} from '@abp/ng.core';
 import { CommentService } from '../services/comment.service';
 import { CreateUpdateCommentDto } from '../models/comment';
+import { CaptchaComponent } from '../captcha/captcha.component';
 
 @Component({
   selector: 'app-comment-form',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     ReactiveFormsModule,
+    LocalizationPipe,
     CaptchaComponent
   ],
   templateUrl: './comment-form.component.html',
@@ -39,7 +51,6 @@ export class CommentFormComponent implements OnInit {
       file: [null]
     });
 
-    // Управление disabled состоянием
     this.commentForm.statusChanges.subscribe(() => {
       Object.keys(this.commentForm.controls).forEach(key => {
         const control = this.commentForm.get(key);
@@ -54,7 +65,6 @@ export class CommentFormComponent implements OnInit {
 
   async onSubmit(): Promise<void> {
     if (this.commentForm.invalid) {
-      console.log('Form invalid:', this.commentForm.errors);
       this.markFormGroupTouched();
       return;
     }
@@ -63,9 +73,7 @@ export class CommentFormComponent implements OnInit {
 
     try {
       const formData = this.commentForm.value;
-      console.log('Form data:', formData);
 
-      // Создаем объект для отправки
       const commentData: CreateUpdateCommentDto = {
         userName: formData.userName,
         email: formData.email,
@@ -74,18 +82,11 @@ export class CommentFormComponent implements OnInit {
         captcha: formData.captcha
       };
 
-      console.log('Sending to API:', commentData);
-
-      // Отправляем комментарий в БД
       const result = await this.commentService.createComment(commentData).toPromise();
-      console.log('API Response:', result);
 
-      // Сбрасываем форму и эмитим событие
       this.commentForm.reset();
       this.commentAdded.emit();
       this.showPreview = false;
-
-      console.log('Comment created successfully');
 
     } catch (error) {
       console.error('Error creating comment:', error);
@@ -97,10 +98,8 @@ export class CommentFormComponent implements OnInit {
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
-      console.log('File selected:', file.name);
       this.commentForm.patchValue({ file: file });
 
-      // Показываем имя файла
       const fileNameElement = document.getElementById('fileName');
       if (fileNameElement) {
         fileNameElement.textContent = file.name;

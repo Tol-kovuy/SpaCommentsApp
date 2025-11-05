@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommentService } from '../services/comment.service';
-import { CommentDto } from '../models/comment'; // Используем CommentDto вместо Comment
+import { CommentDto } from '../models/comment';
 import { CommonModule } from '@angular/common';
 import { CommentFormComponent } from '../comment-form/comment-form.component';
+import { CommentItemComponent } from '../comment-item/comment-item.component';
 
 @Component({
   selector: 'app-comment-list',
@@ -10,12 +11,13 @@ import { CommentFormComponent } from '../comment-form/comment-form.component';
   imports: [
     CommonModule,
     CommentFormComponent,
+    CommentItemComponent
   ],
   templateUrl: './comment-list.component.html',
   styleUrls: ['./comment-list.component.scss']
 })
 export class CommentListComponent implements OnInit {
-  comments: CommentDto[] = []; // Используем CommentDto вместо Comment
+  comments: CommentDto[] = [];
   totalCount = 0;
   pageSize = 25;
   currentPage = 1;
@@ -62,12 +64,7 @@ export class CommentListComponent implements OnInit {
     return Array.from({ length: totalPages }, (_, i) => i + 1);
   }
 
-  onReplyAdded(): void {
+  onCommentAdded(): void {
     this.loadComments();
-  }
-
-  showReplyForm(commentId: string): void {
-    // Логика для показа формы ответа
-    console.log('Reply to comment:', commentId);
   }
 }

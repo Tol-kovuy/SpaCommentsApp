@@ -9,12 +9,12 @@ public class SpaAppPermissionDefinitionProvider : PermissionDefinitionProvider
 {
     public override void Define(IPermissionDefinitionContext context)
     {
-        var myGroup = context.AddGroup(SpaAppPermissions.GroupName);
+        var commentGroup = context.AddGroup(SpaAppPermissions.GroupName, L("Permission:SpaApp"));
 
-        var booksPermission = myGroup.AddPermission(SpaAppPermissions.Comments.Default, L("Permission:Books"));
-        booksPermission.AddChild(SpaAppPermissions.Comments.Create, L("Permission:Books.Create"));
-        booksPermission.AddChild(SpaAppPermissions.Comments.Edit, L("Permission:Books.Edit"));
-        booksPermission.AddChild(SpaAppPermissions.Comments.Delete, L("Permission:Books.Delete"));
+        var comments = commentGroup.AddPermission(SpaAppPermissions.Comments.Default, L("Permission:Comments"));
+        comments.AddChild(SpaAppPermissions.Comments.Create, L("Permission:Comments.Create"));
+        comments.AddChild(SpaAppPermissions.Comments.Edit, L("Permission:Comments.Edit"));
+        comments.AddChild(SpaAppPermissions.Comments.Delete, L("Permission:Comments.Delete"));
         //Define your own permissions here. Example:
         //myGroup.AddPermission(SpaAppPermissions.MyPermission1, L("Permission:MyPermission1"));
     }

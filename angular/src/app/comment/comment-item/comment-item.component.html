@@ -1,0 +1,43 @@
+<div class="comment-item" [style.margin-left.px]="getMarginLeft()">
+  <div class="comment-header">
+    <span class="comment-author">{{comment.userName}}</span>
+    <span class="comment-email">{{comment.email}}</span>
+    <span class="comment-date">{{comment.creationTime | date:'dd.MM.yy в HH:mm'}}</span>
+  </div>
+  <div class="comment-text">{{comment.text}}</div>
+
+  <button class="btn-reply" (click)="toggleReplyForm()">
+    {{ showReplyForm ? 'Cancel' : 'Reply' }}
+  </button>
+  <div *ngIf="showReplyForm" class="reply-form">
+    <div class="form-group">
+      <input type="text"
+             [(ngModel)]="replyUserName"
+             placeholder="Your name (optional)"
+             class="form-control">
+    </div>
+    <div class="form-group">
+      <textarea [(ngModel)]="replyText"
+                placeholder="Write your reply..."
+                rows="3"
+                class="form-control"></textarea>
+    </div>
+    <div class="form-actions">
+      <button (click)="submitReply()"
+              [disabled]="!replyText.trim()"
+              class="btn-submit">
+        Submit Reply
+      </button>
+      <button (click)="toggleReplyForm()" class="btn-cancel">
+        Cancel
+      </button>
+    </div>
+  </div>
+  <div *ngIf="hasReplies()" class="replies">
+    <app-comment-item *ngFor="let reply of comment.replies"
+                      [comment]="reply"
+                      [level]="level + 1"
+                      (commentAdded)="commentAdded.emit()">
+    </app-comment-item>
+  </div>
+</div>

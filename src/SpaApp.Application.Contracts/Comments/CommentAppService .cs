@@ -34,7 +34,6 @@ public class CommentAppService :
     {
         var queryable = await _repository.GetQueryableAsync();
 
-        // Только родительские комментарии (без ParentId) + сортировка LIFO по умолчанию
         var parentQuery = queryable
             .Where(x => x.ParentId == null)
             .OrderBy(input.Sorting.IsNullOrWhiteSpace() ? "CreationTime desc" : input.Sorting)
@@ -44,7 +43,6 @@ public class CommentAppService :
         var comments = await AsyncExecuter.ToListAsync(parentQuery);
         var totalCount = await AsyncExecuter.CountAsync(queryable.Where(x => x.ParentId == null));
 
-        // Загружаем ответы для каждого комментария
         var commentDtos = ObjectMapper.Map<List<Comment>, List<CommentDto>>(comments);
         foreach (var commentDto in commentDtos)
         {

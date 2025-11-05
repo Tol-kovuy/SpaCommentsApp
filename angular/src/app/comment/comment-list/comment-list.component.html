@@ -1,8 +1,5 @@
 <div class="comments-container">
-  <!-- Форма добавления комментария -->
-  <app-comment-form (commentAdded)="onReplyAdded()"></app-comment-form>
-
-  <!-- Контролы сортировки -->
+  <app-comment-form (commentAdded)="onCommentAdded()"></app-comment-form>
   <div class="sorting-controls">
     <button (click)="onSortChange('userName')" class="btn-sort">
       User Name {{getSortIcon('userName')}}
@@ -14,34 +11,13 @@
       Date {{getSortIcon('creationTime')}}
     </button>
   </div>
-
-  <!-- Список комментариев -->
   <div class="comments-list">
-    <div *ngFor="let comment of comments" class="comment-item">
-      <div class="comment-header">
-        <span class="comment-author">{{comment.userName}}</span>
-        <span class="comment-email">{{comment.email}}</span>
-        <span class="comment-date">{{comment.creationTime | date:'dd.MM.yy в HH:mm'}}</span>
-      </div>
-      <div class="comment-text">{{comment.text}}</div>
-
-      <button class="btn-reply" (click)="showReplyForm(comment.id)">Reply</button>
-
-      <!-- Ответы на комментарий -->
-      <div *ngIf="comment.replies && comment.replies.length > 0" class="replies">
-        <div *ngFor="let reply of comment.replies" class="comment-item reply">
-          <div class="comment-header">
-            <span class="comment-author">{{reply.userName}}</span>
-            <span class="comment-email">{{reply.email}}</span>
-            <span class="comment-date">{{reply.creationTime | date:'dd.MM.yy в HH:mm'}}</span>
-          </div>
-          <div class="comment-text">{{reply.text}}</div>
-        </div>
-      </div>
-    </div>
+    <app-comment-item *ngFor="let comment of comments"
+                      [comment]="comment"
+                      [level]="0"
+                      (commentAdded)="onCommentAdded()">
+    </app-comment-item>
   </div>
-
-  <!-- Пагинация -->
   <div class="pagination" *ngIf="totalCount > pageSize">
     <button *ngFor="let page of getPages()"
             (click)="onPageChange(page)"

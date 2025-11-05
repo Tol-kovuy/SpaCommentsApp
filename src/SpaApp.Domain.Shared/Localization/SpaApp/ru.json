@@ -1,6 +1,6 @@
 {
-  "culture": "ru",
-  "texts": {
+  "Culture": "ru",
+  "Texts": {
     "AppName": "SpaApp",
     "Menu:Home": "Дома",
     "Menu:ContactUs": "Связаться с нами",
@@ -37,6 +37,34 @@
     "Unspecified": "Система",
     "SeeAllUsers": "Просмотреть всех пользователей",
     "TakePhoto": "Сделать фотографию",
-    "ChoosePhoto": "Выбрать фото"
+    "ChoosePhoto": "Выбрать фото",
+    "Menu:Comments": "Комментарии",
+    "Comments": "Комментарии",
+    "AddComment": "Добавить комментарий",
+    "UserName": "Имя пользователя",
+    "Email": "Электронная почта",
+    "Homepage": "Домашняя страница",
+    "Text": "Текст",
+    "FileAttachment": "Прикрепление файла",
+    "Captcha": "CAPTCHA",
+    "ChooseFile": "Выбрать файл",
+    "NoFileChosen": "Файл не выбран",
+    "EnterCaptcha": "Введите текст CAPTCHA",
+    "ShowPreview": "Показать предпросмотр",
+    "HidePreview": "Скрыть предпросмотр",
+    "SubmitComment": "Отправить комментарий",
+    "Submitting": "Отправка...",
+    "Preview": "Предпросмотр",
+    "Anonymous": "Анонимный",
+    "UserNameRequired": "Имя пользователя обязательно и должно содержать только буквы и цифры",
+    "ValidEmailRequired": "Требуется действительный адрес электронной почты",
+    "ValidUrlRequired": "Пожалуйста, введите действительный URL",
+    "CommentTextRequired": "Текст комментария обязателен",
+    "CaptchaRequired": "CAPTCHA обязательна",
+    "NewComment": "Новый комментарий",
+    "EditComment": "Редактировать комментарий",
+    "DeleteComment": "Удалить комментарий",
+    "CommentDeletionConfirmation": "Вы уверены, что хотите удалить этот комментарий?",
+    "SuccessfullyDeleted": "Успешно удалено"
   }
 }
