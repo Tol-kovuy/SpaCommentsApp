@@ -44,6 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SpaApp.Application.Contracts\SpaApp.Application.Contracts.csproj" />
     <ProjectReference Include="..\SpaApp.Application\SpaApp.Application.csproj" />
     <ProjectReference Include="..\SpaApp.HttpApi\SpaApp.HttpApi.csproj" />
     <ProjectReference Include="..\SpaApp.EntityFrameworkCore\SpaApp.EntityFrameworkCore.csproj" />

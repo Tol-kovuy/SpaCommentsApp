@@ -1,65 +1,86 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommentDto, CreateUpdateCommentDto } from '../models/comment';
-import { CommentService } from '../services/comment.service';
+import { Component, Input, Output, EventEmitter, ChangeDetectorRef } from '@angular/core';
+import { CommentDto } from '../models/comment';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-comment-item',
   standalone: true,
-  imports: [CommonModule, FormsModule, CommentItemComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './comment-item.component.html',
   styleUrls: ['./comment-item.component.scss']
 })
 export class CommentItemComponent {
   @Input() comment!: CommentDto;
   @Input() level: number = 0;
-  @Output() commentAdded = new EventEmitter<void>();
+  @Input() showReplyFormFor: string | null = null;
+  @Input() replyTexts!: Map<string, string>;
+  @Input() replyUserNames!: Map<string, string>;
 
-  showReplyForm = false;
-  replyText: string = '';
-  replyUserName: string = '';
+  @Output() showReply = new EventEmitter<string>();
+  @Output() setReplyText = new EventEmitter<{ id: string, text: string }>();
+  @Output() setReplyUserName = new EventEmitter<{ id: string, userName: string }>();
+  @Output() submitReply = new EventEmitter<{ parentCommentId: string, text: string, userName: string }>();
+  @Output() cancelReply = new EventEmitter<string>();
+  @Output() loadReplies = new EventEmitter<CommentDto>();
 
-  constructor(private commentService: CommentService) { }
+  constructor(private cdRef: ChangeDetectorRef) { }
 
-  toggleReplyForm(): void {
-    this.showReplyForm = !this.showReplyForm;
-    if (this.showReplyForm) {
-      this.replyText = '';
-      this.replyUserName = '';
+  isReplyingTo(commentId: string): boolean {
+    return this.showReplyFormFor === commentId;
+  }
+
+  getReplyText(commentId: string): string {
+    return this.replyTexts.get(commentId) || '';
+  }
+
+  getReplyUserName(commentId: string): string {
+    return this.replyUserNames.get(commentId) || '';
+  }
+
+  onSubmitReply(commentId: string): void {
+    const text = this.getReplyText(commentId);
+    const userName = this.getReplyUserName(commentId);
+
+    console.log('CommentItemComponent: onSubmitReply', { commentId, text, userName });
+
+    if (text?.trim()) {
+      this.submitReply.emit({
+        parentCommentId: commentId,
+        text: text,
+        userName: userName
+      });
+    } else {
+      console.error('CommentItemComponent: Empty text submitted');
     }
   }
 
-  submitReply(): void {
-    if (!this.replyText.trim()) return;
-
-    const replyDto: CreateUpdateCommentDto = {
-      userName: this.replyUserName.trim() || 'Anonymous',
-      email: '',
-      homepage: '',
-      text: this.replyText.trim(),
-      captcha: 'test',
-      parentId: this.comment.id
-    };
-
-    this.commentService.createComment(replyDto).subscribe({
-      next: () => {
-        this.showReplyForm = false;
-        this.replyText = '';
-        this.replyUserName = '';
-        this.commentAdded.emit();
-      },
-      error: (error) => {
-        console.error('Error submitting reply:', error);
-      }
-    });
+  onShowReplyForm(commentId: string): void {
+    console.log('CommentItemComponent: onShowReplyForm', commentId);
+    this.showReply.emit(commentId);
   }
 
-  getMarginLeft(): string {
-    return `${this.level * 30}px`;
+  onSetReplyText(commentId: string, text: string): void {
+    console.log('CommentItemComponent: onSetReplyText', { commentId, text });
+    this.setReplyText.emit({ id: commentId, text });
   }
 
-  hasReplies(): boolean {
-    return this.comment.replies && this.comment.replies.length > 0;
+  onSetReplyUserName(commentId: string, userName: string): void {
+    console.log('CommentItemComponent: onSetReplyUserName', { commentId, userName });
+    this.setReplyUserName.emit({ id: commentId, userName });
+  }
+
+  onCancelReply(commentId: string): void {
+    this.cancelReply.emit(commentId);
+  }
+
+  onLoadReplies(comment: CommentDto): void {
+    if (!comment.repliesLoaded) {
+      this.loadReplies.emit(comment);
+    }
+  }
+
+  trackByCommentId(index: number, comment: CommentDto): string {
+    return comment.id;
   }
 }

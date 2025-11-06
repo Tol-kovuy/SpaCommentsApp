@@ -1,4 +1,7 @@
 .comment-item {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
   border: 1px solid #e9ecef;
   border-radius: 8px;
   padding: 15px;
@@ -40,48 +43,101 @@
   margin-bottom: 10px;
 }
 
-.btn-reply {
+.btn-reply-small {
   background: #007bff;
   color: white;
   border: none;
-  padding: 6px 12px;
+  padding: 4px 8px;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9em;
+  font-size: 0.8em;
+  margin-top: 5px;
 
   &:hover {
     background: #0056b3;
   }
 }
 
-.reply-form {
+.btn-load-replies {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8em;
+  margin-top: 10px;
+
+  &:hover {
+    background: #545b62;
+  }
+}
+
+.nested-replies {
+  margin-top: 15px;
+  border-left: 3px solid #007bff;
+  padding-left: 20px;
+
+  .comment-item {
+    margin-left: 0;
+    border: 1px solid #e9ecef;
+
+    &.level-1 {
+      border-left-color: #007bff;
+    }
+
+    &.level-2 {
+      border-left-color: #28a745;
+    }
+
+    &.level-3 {
+      border-left-color: #dc3545;
+    }
+  }
+}
+
+.replies-list {
+  margin: 0;
+  padding: 0;
+
+  .comment-item {
+    margin-bottom: 10px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.reply-form-small {
   background: #f8f9fa;
-  border-radius: 8px;
-  padding: 15px;
+  border-radius: 6px;
+  padding: 10px;
   margin-top: 10px;
   border: 1px solid #e9ecef;
 
   .form-group {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   .form-control {
     width: 100%;
-    padding: 8px 12px;
+    padding: 6px 10px;
     border: 1px solid #ced4da;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .form-actions {
     display: flex;
-    gap: 10px;
+    gap: 8px;
 
     button {
-      padding: 8px 16px;
+      padding: 6px 12px;
       border: none;
       border-radius: 4px;
       cursor: pointer;
+      font-size: 0.85em;
     }
 
     .btn-submit {
@@ -101,12 +157,6 @@
   }
 }
 
-.replies {
-  margin-top: 15px;
-  border-left: 3px solid #007bff;
-  padding-left: 20px;
-}
-
 @media (max-width: 768px) {
   .comment-header {
     flex-direction: column;
@@ -119,8 +169,12 @@
     padding: 10px;
   }
 
-  .replies {
+  .nested-replies {
     padding-left: 10px;
-    margin-left: 10px;
+    margin-left: 5px;
+
+    .comment-item {
+      padding: 8px;
+    }
   }
 }

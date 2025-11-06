@@ -901,13 +901,18 @@ export class ServiceProxy {
     }
 
     /**
+     * @param filter (optional) 
      * @param sorting (optional) 
      * @param skipCount (optional) 
      * @param maxResultCount (optional) 
      * @return OK
      */
-    commentGET(sorting: string | undefined, skipCount: number | undefined, maxResultCount: number | undefined): Observable<PagedResultDto_1OfOfCommentDtoAndContractsAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+    commentGET(filter: string | undefined, sorting: string | undefined, skipCount: number | undefined, maxResultCount: number | undefined): Observable<PagedResultDto_1OfOfCommentDtoAndContractsAnd_0AndCulture_neutralAndPublicKeyToken_null> {
         let url_ = this.baseUrl + "/api/app/comment?";
+        if (filter === null)
+            throw new globalThis.Error("The parameter 'filter' cannot be null.");
+        else if (filter !== undefined)
+            url_ += "Filter=" + encodeURIComponent("" + filter) + "&";
         if (sorting === null)
             throw new globalThis.Error("The parameter 'sorting' cannot be null.");
         else if (sorting !== undefined)
@@ -1176,6 +1181,134 @@ export class ServiceProxy {
         if (status === 200) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
             return _observableOf(null as any);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param maxDepth (optional) 
+     * @return OK
+     */
+    withReplies(id: string, maxDepth: number | undefined): Observable<CommentDto> {
+        let url_ = this.baseUrl + "/api/app/comment/{id}/with-replies?";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        if (maxDepth === null)
+            throw new globalThis.Error("The parameter 'maxDepth' cannot be null.");
+        else if (maxDepth !== undefined)
+            url_ += "maxDepth=" + encodeURIComponent("" + maxDepth) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processWithReplies(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processWithReplies(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<CommentDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<CommentDto>;
+        }));
+    }
+
+    protected processWithReplies(response: HttpResponseBase): Observable<CommentDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = CommentDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param sorting (optional) 
+     * @param skipCount (optional) 
+     * @param maxResultCount (optional) 
+     * @return OK
+     */
+    replies(commentId: string, sorting: string | undefined, skipCount: number | undefined, maxResultCount: number | undefined): Observable<PagedResultDto_1OfOfCommentDtoAndContractsAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        let url_ = this.baseUrl + "/api/app/comment/{commentId}/replies?";
+        if (commentId === undefined || commentId === null)
+            throw new globalThis.Error("The parameter 'commentId' must be defined.");
+        url_ = url_.replace("{commentId}", encodeURIComponent("" + commentId));
+        if (sorting === null)
+            throw new globalThis.Error("The parameter 'sorting' cannot be null.");
+        else if (sorting !== undefined)
+            url_ += "Sorting=" + encodeURIComponent("" + sorting) + "&";
+        if (skipCount === null)
+            throw new globalThis.Error("The parameter 'skipCount' cannot be null.");
+        else if (skipCount !== undefined)
+            url_ += "SkipCount=" + encodeURIComponent("" + skipCount) + "&";
+        if (maxResultCount === null)
+            throw new globalThis.Error("The parameter 'maxResultCount' cannot be null.");
+        else if (maxResultCount !== undefined)
+            url_ += "MaxResultCount=" + encodeURIComponent("" + maxResultCount) + "&";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processReplies(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processReplies(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<PagedResultDto_1OfOfCommentDtoAndContractsAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<PagedResultDto_1OfOfCommentDtoAndContractsAnd_0AndCulture_neutralAndPublicKeyToken_null>;
+        }));
+    }
+
+    protected processReplies(response: HttpResponseBase): Observable<PagedResultDto_1OfOfCommentDtoAndContractsAnd_0AndCulture_neutralAndPublicKeyToken_null> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = PagedResultDto_1OfOfCommentDtoAndContractsAnd_0AndCulture_neutralAndPublicKeyToken_null.fromJS(resultData200);
+            return _observableOf(result200);
             }));
         } else if (status !== 200 && status !== 204) {
             return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
@@ -5825,6 +5958,9 @@ export class CommentDto implements ICommentDto {
     filePath?: string | undefined;
     fileType?: string | undefined;
     replies?: CommentDto[] | undefined;
+    repliesCount?: number;
+    hasReplies?: boolean;
+    repliesLoaded?: boolean;
 
     constructor(data?: ICommentDto) {
         if (data) {
@@ -5854,6 +5990,9 @@ export class CommentDto implements ICommentDto {
                 for (let item of _data["replies"])
                     this.replies!.push(CommentDto.fromJS(item));
             }
+            this.repliesCount = _data["repliesCount"];
+            this.hasReplies = _data["hasReplies"];
+            this.repliesLoaded = _data["repliesLoaded"];
         }
     }
 
@@ -5883,6 +6022,9 @@ export class CommentDto implements ICommentDto {
             for (let item of this.replies)
                 data["replies"].push(item ? item.toJSON() : undefined as any);
         }
+        data["repliesCount"] = this.repliesCount;
+        data["hasReplies"] = this.hasReplies;
+        data["repliesLoaded"] = this.repliesLoaded;
         return data;
     }
 }
@@ -5901,6 +6043,9 @@ export interface ICommentDto {
     filePath?: string | undefined;
     fileType?: string | undefined;
     replies?: CommentDto[] | undefined;
+    repliesCount?: number;
+    hasReplies?: boolean;
+    repliesLoaded?: boolean;
 }
 
 export class CreateUpdateCommentDto implements ICreateUpdateCommentDto {

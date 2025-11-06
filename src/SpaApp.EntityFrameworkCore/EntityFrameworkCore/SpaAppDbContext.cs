@@ -87,17 +87,47 @@ public class SpaAppDbContext :
             b.ToTable(SpaAppConsts.DbTablePrefix + "Comments", SpaAppConsts.DbSchema);
             b.ConfigureByConvention();
 
-            b.Property(x => x.UserName).IsRequired().HasMaxLength(128);
-            b.Property(x => x.Email).IsRequired().HasMaxLength(256);
-            b.Property(x => x.Text).IsRequired().HasMaxLength(2048);
-            b.Property(x => x.Homepage).HasMaxLength(256);
-            b.Property(x => x.FilePath).HasMaxLength(512);
-            b.Property(x => x.FileType).HasMaxLength(128);
+            b.Property(x => x.UserName)
+                .IsRequired()
+                .HasMaxLength(128);
 
-            // связь для иерархии комментариев (Parent → Replies)
+            b.Property(x => x.Email)
+                .IsRequired()
+                .HasMaxLength(256);
+
+            b.Property(x => x.Text)
+                .IsRequired()
+                .HasMaxLength(4000); // Увеличил для SQL Server
+
+            b.Property(x => x.Homepage)
+                .HasMaxLength(256);
+
+            b.Property(x => x.FilePath)
+                .HasMaxLength(512);
+
+            b.Property(x => x.FileType)
+                .HasMaxLength(128);
+
             b.HasOne(x => x.Parent)
                 .WithMany(x => x.Replies)
-                .HasForeignKey(x => x.ParentId);
+                .HasForeignKey(x => x.ParentId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Restrict); 
+
+            b.HasIndex(x => x.ParentId)
+                .HasDatabaseName("IX_Comments_ParentId");
+
+            b.HasIndex(x => x.CreationTime)
+                .HasDatabaseName("IX_Comments_CreationTime");
+
+            b.HasIndex(x => new { x.ParentId, x.CreationTime })
+                .HasDatabaseName("IX_Comments_ParentId_CreationTime");
+
+            b.HasIndex(x => x.UserName)
+                .HasDatabaseName("IX_Comments_UserName");
+
+            b.HasIndex(x => x.Email)
+                .HasDatabaseName("IX_Comments_Email");
         });
 
         /* Configure your own tables/entities inside here */

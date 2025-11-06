@@ -1,43 +1,64 @@
-<div class="comment-item" [style.margin-left.px]="getMarginLeft()">
-  <div class="comment-header">
-    <span class="comment-author">{{comment.userName}}</span>
-    <span class="comment-email">{{comment.email}}</span>
-    <span class="comment-date">{{comment.creationTime | date:'dd.MM.yy в HH:mm'}}</span>
-  </div>
-  <div class="comment-text">{{comment.text}}</div>
+<div class="comment-item level-{{level}}">
+  <div class="comment-content">
+    <div class="comment-header">
+      <strong>{{comment.userName}}</strong>
+      <span class="comment-date">{{comment.creationTime | date:'dd.MM.yy в HH:mm'}}</span>
+    </div>
+    <div class="comment-text">{{comment.text}}</div>
 
-  <button class="btn-reply" (click)="toggleReplyForm()">
-    {{ showReplyForm ? 'Cancel' : 'Reply' }}
-  </button>
-  <div *ngIf="showReplyForm" class="reply-form">
-    <div class="form-group">
-      <input type="text"
-             [(ngModel)]="replyUserName"
-             placeholder="Your name (optional)"
-             class="form-control">
-    </div>
-    <div class="form-group">
-      <textarea [(ngModel)]="replyText"
-                placeholder="Write your reply..."
-                rows="3"
-                class="form-control"></textarea>
-    </div>
-    <div class="form-actions">
-      <button (click)="submitReply()"
-              [disabled]="!replyText.trim()"
-              class="btn-submit">
-        Submit Reply
-      </button>
-      <button (click)="toggleReplyForm()" class="btn-cancel">
-        Cancel
-      </button>
+    <button class="btn-reply-small" (click)="onShowReplyForm(comment.id)">
+      {{ isReplyingTo(comment.id) ? 'Cancel' : 'Reply' }}
+    </button>
+
+    <div *ngIf="isReplyingTo(comment.id)" class="reply-form-small">
+      <div class="form-group">
+        <input type="text"
+               [value]="getReplyUserName(comment.id)"
+               (input)="onSetReplyUserName(comment.id, $event.target.value)"
+               placeholder="Your name (optional)"
+               class="form-control">
+      </div>
+      <div class="form-group">
+        <textarea [value]="getReplyText(comment.id)"
+                  (input)="onSetReplyText(comment.id, $event.target.value)"
+                  placeholder="Write your reply..."
+                  rows="2"
+                  class="form-control"></textarea>
+      </div>
+      <div class="form-actions">
+        <button (click)="onSubmitReply(comment.id)"
+                [disabled]="!getReplyText(comment.id)?.trim()"
+                class="btn-submit">
+          Submit Reply
+        </button>
+        <button (click)="onCancelReply(comment.id)" class="btn-cancel">
+          Cancel
+        </button>
+      </div>
     </div>
   </div>
-  <div *ngIf="hasReplies()" class="replies">
-    <app-comment-item *ngFor="let reply of comment.replies"
-                      [comment]="reply"
-                      [level]="level + 1"
-                      (commentAdded)="commentAdded.emit()">
-    </app-comment-item>
+
+  <div *ngIf="comment.hasReplies" class="nested-replies">
+    <div *ngIf="comment.repliesLoaded && comment.replies && comment.replies.length > 0" class="replies-list">
+      <app-comment-item *ngFor="let nestedReply of comment.replies; trackBy: trackByCommentId"
+                        [comment]="nestedReply"
+                        [level]="level + 1"
+                        [showReplyFormFor]="showReplyFormFor"
+                        [replyTexts]="replyTexts"
+                        [replyUserNames]="replyUserNames"
+                        (showReply)="showReply.emit($event)"
+                        (setReplyText)="setReplyText.emit($event)"
+                        (setReplyUserName)="setReplyUserName.emit($event)"
+                        (submitReply)="submitReply.emit($event)"
+                        (cancelReply)="cancelReply.emit($event)"
+                        (loadReplies)="loadReplies.emit($event)">
+      </app-comment-item>
+    </div>
+
+    <button *ngIf="!comment.repliesLoaded && comment.repliesCount > 0"
+            (click)="onLoadReplies(comment)"
+            class="btn-load-replies">
+      Load Replies ({{comment.repliesCount}})
+    </button>
   </div>
 </div>

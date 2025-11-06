@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SpaApp.Comments;
+using SpaApp.Comments.Dtos;
 using SpaApp.Permissions;
 using System;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ public class CommentController : SpaAppController
 
     [HttpGet]
     [Authorize(SpaAppPermissions.Comments.Default)]
-    public Task<PagedResultDto<CommentDto>> GetListAsync([FromQuery] PagedAndSortedResultRequestDto input)
+    public Task<PagedResultDto<CommentDto>> GetListAsync([FromQuery] CommentGetListDto input)
     {
         return _commentAppService.GetListAsync(input);
     }
@@ -31,6 +32,28 @@ public class CommentController : SpaAppController
     public Task<CommentDto> GetAsync(Guid id)
     {
         return _commentAppService.GetAsync(id);
+    }
+
+    [HttpGet("{id}/with-replies")]
+    [Authorize(SpaAppPermissions.Comments.Default)]
+    public Task<CommentDto> GetWithRepliesAsync(Guid id, [FromQuery] int maxDepth = 3)
+    {
+        return _commentAppService.GetWithRepliesAsync(id, maxDepth);
+    }
+
+    [HttpGet("{commentId}/replies")]
+    [Authorize(SpaAppPermissions.Comments.Default)]
+    public Task<PagedResultDto<CommentDto>> GetRepliesAsync(
+        Guid commentId,
+        [FromQuery] PagedAndSortedResultRequestDto input)
+    {
+        return _commentAppService.GetRepliesAsync(new GetRepliesRequestDto
+        {
+            CommentId = commentId,
+            SkipCount = input.SkipCount,
+            MaxResultCount = input.MaxResultCount,
+            Sorting = input.Sorting
+        });
     }
 
     [HttpPost]

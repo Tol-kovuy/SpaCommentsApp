@@ -1,23 +1,122 @@
 <div class="comments-container">
   <app-comment-form (commentAdded)="onCommentAdded()"></app-comment-form>
-  <div class="sorting-controls">
-    <button (click)="onSortChange('userName')" class="btn-sort">
-      User Name {{getSortIcon('userName')}}
-    </button>
-    <button (click)="onSortChange('email')" class="btn-sort">
-      Email {{getSortIcon('email')}}
-    </button>
-    <button (click)="onSortChange('creationTime')" class="btn-sort">
-      Date {{getSortIcon('creationTime')}}
-    </button>
+
+  <div class="comments-table" *ngIf="comments.length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th (click)="onSortChange('userName')" class="sortable">
+            User Name {{getSortIcon('userName')}}
+          </th>
+          <th (click)="onSortChange('email')" class="sortable">
+            Email {{getSortIcon('email')}}
+          </th>
+          <th (click)="onSortChange('creationTime')" class="sortable">
+            Date {{getSortIcon('creationTime')}}
+          </th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <ng-container *ngFor="let comment of comments; trackBy: trackByCommentId">
+          <tr class="comment-row" [class.expanded]="isExpanded(comment.id)">
+            <td class="user-name">{{comment.userName}}</td>
+            <td class="email">{{comment.email}}</td>
+            <td class="date">{{comment.creationTime | date:'dd.MM.yy HH:mm'}}</td>
+
+            <td class="actions">
+              <button class="btn-view" (click)="toggleCommentDetails(comment.id)">
+                {{ isExpanded(comment.id) ? 'Hide' : 'View' }}
+              </button>
+            </td>
+          </tr>
+
+          <tr *ngIf="isExpanded(comment.id)" class="comment-detail-row">
+            <td colspan="5" class="comment-detail-cell">
+              <div class="comment-detail">
+                <div class="main-comment">
+                  <div class="comment-header">
+                    <strong>{{comment.userName}}</strong>
+                    <span class="email">{{comment.email}}</span>
+                    <span class="date">{{comment.creationTime | date:'dd.MM.yy в HH:mm'}}</span>
+                  </div>
+                  <div class="comment-text-full">{{comment.text}}</div>
+
+                  <button class="btn-reply" (click)="onShowReplyForm(comment.id)">
+                    {{ isReplyingTo(comment.id) ? 'Cancel' : 'Reply' }}
+                  </button>
+
+                  <div *ngIf="isReplyingTo(comment.id)" class="reply-form">
+                    <div class="form-group">
+                      <input type="text"
+                             [value]="replyUserNames.get(comment.id) || ''"
+                             (input)="onSetReplyUserName({id: comment.id, userName: $event.target.value})"
+                             placeholder="Your name (optional)"
+                             class="form-control">
+                    </div>
+                    <div class="form-group">
+                      <textarea [value]="replyTexts.get(comment.id) || ''"
+                                (input)="onSetReplyText({id: comment.id, text: $event.target.value})"
+                                placeholder="Write your reply..."
+                                rows="3"
+                                class="form-control"></textarea>
+                    </div>
+                    <div class="form-actions">
+                      <button (click)="onSubmitReply({parentCommentId: comment.id, text: replyTexts.get(comment.id) || '', userName: replyUserNames.get(comment.id) || ''})"
+                              [disabled]="!(replyTexts.get(comment.id) || '')?.trim()"
+                              class="btn-submit">
+                        Submit Reply
+                      </button>
+                      <button (click)="onCancelReply(comment.id)" class="btn-cancel">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div *ngIf="comment.hasReplies" class="replies-section">
+                  <h4>Replies ({{comment.repliesCount}}):</h4>
+
+                  <div class="replies-list" *ngIf="comment.repliesLoaded && comment.replies && comment.replies.length > 0">
+                    <app-comment-item *ngFor="let reply of comment.replies; trackBy: trackByCommentId"
+                                      [comment]="reply"
+                                      [level]="1"
+                                      [showReplyFormFor]="showReplyFormFor"
+                                      [replyTexts]="replyTexts"
+                                      [replyUserNames]="replyUserNames"
+                                      (showReply)="onShowReplyForm($event)"
+                                      (setReplyText)="onSetReplyText($event)"
+                                      (setReplyUserName)="onSetReplyUserName($event)"
+                                      (submitReply)="onSubmitReply($event)"
+                                      (cancelReply)="onCancelReply($event)"
+                                      (loadReplies)="onLoadReplies($event)">
+                    </app-comment-item>
+
+                    <button *ngIf="comment.replies.length < comment.repliesCount"
+                            (click)="loadMoreReplies(comment)"
+                            class="btn-load-more">
+                      Load More Replies
+                    </button>
+                  </div>
+
+                  <button *ngIf="!comment.repliesLoaded && comment.repliesCount > 0"
+                          (click)="onLoadReplies(comment)"
+                          class="btn-load-replies">
+                    Load Replies ({{comment.repliesCount}})
+                  </button>
+
+                  <div *ngIf="comment.repliesLoaded && (!comment.replies || comment.replies.length === 0)" class="no-replies">
+                    No replies yet.
+                  </div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </ng-container>
+      </tbody>
+    </table>
   </div>
-  <div class="comments-list">
-    <app-comment-item *ngFor="let comment of comments"
-                      [comment]="comment"
-                      [level]="0"
-                      (commentAdded)="onCommentAdded()">
-    </app-comment-item>
-  </div>
+
   <div class="pagination" *ngIf="totalCount > pageSize">
     <button *ngFor="let page of getPages()"
             (click)="onPageChange(page)"
@@ -25,5 +124,9 @@
             class="page-btn">
       {{page}}
     </button>
+  </div>
+
+  <div *ngIf="comments.length === 0" class="no-comments">
+    No comments yet. Be the first to comment!
   </div>
 </div>

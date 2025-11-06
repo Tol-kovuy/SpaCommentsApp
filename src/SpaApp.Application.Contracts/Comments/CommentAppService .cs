@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Logging;
+using SpaApp.Comments.Dtos;
 using SpaApp.Permissions;
 using System;
 using System.Collections.Generic;
@@ -12,14 +10,14 @@ using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
+using Volo.Abp.Uow;
 
 namespace SpaApp.Comments;
 
 [Authorize(SpaAppPermissions.Comments.Default)]
 [RemoteService(Name = "Default")]
-[Route("api/app/comment")]
 public class CommentAppService :
-    CrudAppService<Comment, CommentDto, Guid, PagedAndSortedResultRequestDto, CreateUpdateCommentDto>,
+    CrudAppService<Comment, CommentDto, Guid, CommentGetListDto, CreateUpdateCommentDto>,
     ICommentAppService
 {
     private readonly IRepository<Comment, Guid> _repository;
@@ -30,70 +28,115 @@ public class CommentAppService :
         _repository = repository;
     }
 
-    public override async Task<PagedResultDto<CommentDto>> GetListAsync(PagedAndSortedResultRequestDto input)
+    [UnitOfWork(isTransactional: false)]
+    public override async Task<PagedResultDto<CommentDto>> GetListAsync(CommentGetListDto input)
     {
         var queryable = await _repository.GetQueryableAsync();
 
-        var parentQuery = queryable
-            .Where(x => x.ParentId == null)
-            .OrderBy(input.Sorting.IsNullOrWhiteSpace() ? "CreationTime desc" : input.Sorting)
-            .Skip(input.SkipCount)
-            .Take(input.MaxResultCount);
+        IQueryable<Comment> parentQuery = queryable
+            .Where(x => x.ParentId == null);
 
-        var comments = await AsyncExecuter.ToListAsync(parentQuery);
-        var totalCount = await AsyncExecuter.CountAsync(queryable.Where(x => x.ParentId == null));
+        if (!input.Filter.IsNullOrWhiteSpace())
+        {
+            parentQuery = parentQuery.Where(x =>
+                x.Text.Contains(input.Filter) ||
+                x.UserName.Contains(input.Filter));
+        }
+
+        var orderedQuery = input.Sorting.IsNullOrWhiteSpace()
+            ? parentQuery.OrderByDescending(x => x.CreationTime)
+            : parentQuery.OrderBy(input.Sorting);
+
+        var totalCount = await AsyncExecuter.CountAsync(parentQuery);
+
+        var comments = await AsyncExecuter.ToListAsync(
+            orderedQuery.Skip(input.SkipCount).Take(input.MaxResultCount));
 
         var commentDtos = ObjectMapper.Map<List<Comment>, List<CommentDto>>(comments);
+
         foreach (var commentDto in commentDtos)
         {
-            await LoadRepliesAsync(commentDto);
+            commentDto.RepliesCount = await GetRepliesCountAsync(commentDto.Id);
+            commentDto.HasReplies = commentDto.RepliesCount > 0; 
         }
 
         return new PagedResultDto<CommentDto>(totalCount, commentDtos);
     }
 
-    private async Task LoadRepliesAsync(CommentDto commentDto)
+    [UnitOfWork(isTransactional: false)]
+    public async Task<PagedResultDto<CommentDto>> GetRepliesAsync(GetRepliesRequestDto input)
     {
         var queryable = await _repository.GetQueryableAsync();
-        var replies = queryable
-            .Where(x => x.ParentId == commentDto.Id)
-            .OrderBy(x => x.CreationTime)
-            .ToList();
+
+        IQueryable<Comment> repliesQuery = queryable
+            .Where(x => x.ParentId == input.CommentId);
+
+        var orderedRepliesQuery = input.Sorting.IsNullOrWhiteSpace()
+            ? repliesQuery.OrderBy(x => x.CreationTime)
+            : repliesQuery.OrderBy(input.Sorting);
+
+        var totalCount = await AsyncExecuter.CountAsync(repliesQuery);
+        var replies = await AsyncExecuter.ToListAsync(
+            orderedRepliesQuery.Skip(input.SkipCount).Take(input.MaxResultCount));
+
+        var replyDtos = ObjectMapper.Map<List<Comment>, List<CommentDto>>(replies);
+
+        foreach (var reply in replyDtos)
+        {
+            reply.RepliesCount = await GetRepliesCountAsync(reply.Id);
+            reply.HasReplies = reply.RepliesCount > 0; // Теперь можно присваивать
+        }
+
+        return new PagedResultDto<CommentDto>(totalCount, replyDtos);
+    }
+
+    [UnitOfWork(isTransactional: false)]
+    public async Task<CommentDto> GetWithRepliesAsync(Guid id, int maxDepth = 3)
+    {
+        var queryable = await _repository.GetQueryableAsync();
+        var comment = await AsyncExecuter.FirstOrDefaultAsync(queryable.Where(x => x.Id == id));
+
+        if (comment == null)
+            throw new UserFriendlyException("Comment not found");
+
+        var commentDto = ObjectMapper.Map<Comment, CommentDto>(comment);
+        await LoadRepliesRecursiveAsync(commentDto, maxDepth, 0);
+
+        return commentDto;
+    }
+
+    private async Task LoadRepliesRecursiveAsync(CommentDto commentDto, int maxDepth, int currentDepth)
+    {
+        if (currentDepth >= maxDepth) return;
+
+        var queryable = await _repository.GetQueryableAsync();
+        var replies = await AsyncExecuter.ToListAsync(
+            queryable.Where(x => x.ParentId == commentDto.Id)
+                    .OrderBy(x => x.CreationTime)
+                    .Take(50) // ??? количество на уровень
+        );
 
         commentDto.Replies = ObjectMapper.Map<List<Comment>, List<CommentDto>>(replies);
+        commentDto.RepliesCount = await GetRepliesCountAsync(commentDto.Id);
+        commentDto.HasReplies = commentDto.RepliesCount > 0; 
 
         foreach (var reply in commentDto.Replies)
         {
-            await LoadRepliesAsync(reply);
+            await LoadRepliesRecursiveAsync(reply, maxDepth, currentDepth + 1);
         }
+    }
+
+    private async Task<int> GetRepliesCountAsync(Guid commentId)
+    {
+        var queryable = await _repository.GetQueryableAsync();
+        return await AsyncExecuter.CountAsync(queryable.Where(x => x.ParentId == commentId));
     }
 
     [Authorize(SpaAppPermissions.Comments.Create)]
     public override async Task<CommentDto> CreateAsync(CreateUpdateCommentDto input)
     {
-        try
-        {
-            Logger.LogInformation("Creating comment: {UserName}, {Email}, {Text}",
-                input.UserName, input.Email, input.Text);
-
-            // TODO: Добавить валидацию CAPTCHA
-            // TODO: Добавить обработку файлов
-            // TODO: Добавить сбор информации о пользователе (IP, браузер)
-
-            var comment = ObjectMapper.Map<CreateUpdateCommentDto, Comment>(input);
-
-            Logger.LogInformation("Mapped to entity: {Entity}", comment);
-
-            await _repository.InsertAsync(comment, autoSave: true);
-
-            Logger.LogInformation("Comment created with ID: {Id}", comment.Id);
-
-            return ObjectMapper.Map<Comment, CommentDto>(comment);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Error creating comment: {Message}", ex.Message);
-            throw;
-        }
+        var comment = ObjectMapper.Map<CreateUpdateCommentDto, Comment>(input);
+        await _repository.InsertAsync(comment, autoSave: true);
+        return ObjectMapper.Map<Comment, CommentDto>(comment);
     }
 }

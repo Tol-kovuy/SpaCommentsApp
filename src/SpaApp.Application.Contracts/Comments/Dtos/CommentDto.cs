@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using Volo.Abp.Application.Dtos;
 
-namespace SpaApp.Comments;
-
 public class CommentDto : AuditedEntityDto<Guid>
 {
     public Guid? ParentId { get; set; }
@@ -13,5 +11,8 @@ public class CommentDto : AuditedEntityDto<Guid>
     public string Text { get; set; } = default!;
     public string? FilePath { get; set; }
     public string? FileType { get; set; }
-    public List<CommentDto> Replies { get; set; } = new();
+    public List<CommentDto> Replies { get; set; } = new List<CommentDto>();
+    public int RepliesCount { get; set; }
+    public bool HasReplies { get; set; } 
+    public bool RepliesLoaded { get; set; }
 }
