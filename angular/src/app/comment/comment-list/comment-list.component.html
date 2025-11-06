@@ -14,25 +14,22 @@
           <th (click)="onSortChange('creationTime')" class="sortable">
             Date {{getSortIcon('creationTime')}}
           </th>
-          <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <ng-container *ngFor="let comment of comments; trackBy: trackByCommentId">
-          <tr class="comment-row" [class.expanded]="isExpanded(comment.id)">
+          <!-- Кликабельная строка комментария -->
+          <tr class="comment-row clickable-row"
+              [class.expanded]="isExpanded(comment.id)"
+              (click)="toggleCommentDetails(comment.id)">
             <td class="user-name">{{comment.userName}}</td>
             <td class="email">{{comment.email}}</td>
             <td class="date">{{comment.creationTime | date:'dd.MM.yy HH:mm'}}</td>
-
-            <td class="actions">
-              <button class="btn-view" (click)="toggleCommentDetails(comment.id)">
-                {{ isExpanded(comment.id) ? 'Hide' : 'View' }}
-              </button>
-            </td>
           </tr>
 
+          <!-- Детали комментария (раскрывающаяся строка) -->
           <tr *ngIf="isExpanded(comment.id)" class="comment-detail-row">
-            <td colspan="5" class="comment-detail-cell">
+            <td colspan="3" class="comment-detail-cell">
               <div class="comment-detail">
                 <div class="main-comment">
                   <div class="comment-header">
@@ -42,7 +39,7 @@
                   </div>
                   <div class="comment-text-full">{{comment.text}}</div>
 
-                  <button class="btn-reply" (click)="onShowReplyForm(comment.id)">
+                  <button class="btn-reply" (click)="$event.stopPropagation(); onShowReplyForm(comment.id)">
                     {{ isReplyingTo(comment.id) ? 'Cancel' : 'Reply' }}
                   </button>
 
@@ -62,12 +59,12 @@
                                 class="form-control"></textarea>
                     </div>
                     <div class="form-actions">
-                      <button (click)="onSubmitReply({parentCommentId: comment.id, text: replyTexts.get(comment.id) || '', userName: replyUserNames.get(comment.id) || ''})"
+                      <button (click)="$event.stopPropagation(); onSubmitReply({parentCommentId: comment.id, text: replyTexts.get(comment.id) || '', userName: replyUserNames.get(comment.id) || ''})"
                               [disabled]="!(replyTexts.get(comment.id) || '')?.trim()"
                               class="btn-submit">
                         Submit Reply
                       </button>
-                      <button (click)="onCancelReply(comment.id)" class="btn-cancel">
+                      <button (click)="$event.stopPropagation(); onCancelReply(comment.id)" class="btn-cancel">
                         Cancel
                       </button>
                     </div>
