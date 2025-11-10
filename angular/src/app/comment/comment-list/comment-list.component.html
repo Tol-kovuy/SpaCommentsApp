@@ -18,7 +18,6 @@
       </thead>
       <tbody>
         <ng-container *ngFor="let comment of comments; trackBy: trackByCommentId">
-          <!-- Кликабельная строка комментария -->
           <tr class="comment-row clickable-row"
               [class.expanded]="isExpanded(comment.id)"
               (click)="toggleCommentDetails(comment.id)">
@@ -27,7 +26,6 @@
             <td class="date">{{comment.creationTime | date:'dd.MM.yy HH:mm'}}</td>
           </tr>
 
-          <!-- Детали комментария (раскрывающаяся строка) -->
           <tr *ngIf="isExpanded(comment.id)" class="comment-detail-row">
             <td colspan="3" class="comment-detail-cell">
               <div class="comment-detail">
