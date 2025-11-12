@@ -8,8 +8,11 @@ namespace SpaApp.Comments
     public interface IFileAppService : IApplicationService
     {
         Task<FileUploadResultDto> UploadImageAsync(FileUploadInputDto input);
+
         Task<FileUploadResultDto> UploadTextFileAsync(FileUploadInputDto input);
+
         Task<FileDto> GetFileAsync(Guid id);
+
         Task DeleteFileAsync(Guid id);
     }
 }

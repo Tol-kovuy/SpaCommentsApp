@@ -14,5 +14,6 @@ public interface ICommentAppService :
         CreateUpdateCommentDto>
 {
     Task<PagedResultDto<CommentDto>> GetRepliesAsync(GetRepliesRequestDto input);
+
     Task<CommentDto> GetWithRepliesAsync(Guid id, int maxDepth = 3);
 }

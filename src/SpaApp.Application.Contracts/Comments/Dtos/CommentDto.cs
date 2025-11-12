@@ -15,7 +15,6 @@ public class CommentDto : AuditedEntityDto<Guid>
     public string Email { get; set; }
     public string? Homepage { get; set; }
     public string Text { get; set; }
-
     public Guid? FileId { get; set; }
     public string FileName { get; set; }
     public string FileType { get; set; }
@@ -24,10 +23,8 @@ public class CommentDto : AuditedEntityDto<Guid>
     public int? Width { get; set; }
     public int? Height { get; set; }
     public string TextContent { get; set; }
-
     public List<CommentFileDto> Files { get; set; } = new();
     public List<CommentDto> Replies { get; set; } = new();
-
     public int RepliesCount { get; set; }
     public bool HasReplies { get; set; }
     public bool RepliesLoaded { get; set; }

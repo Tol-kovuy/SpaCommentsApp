@@ -19,7 +19,13 @@ namespace SpaApp.Comments;
 [Authorize(SpaAppPermissions.Comments.Default)]
 [RemoteService(Name = "Default")]
 public class CommentAppService :
-    CrudAppService<Comment, CommentDto, Guid, CommentGetListDto, CreateUpdateCommentDto>,
+    CrudAppService<
+        Comment, 
+        CommentDto, 
+        Guid, 
+        CommentGetListDto, 
+        CreateUpdateCommentDto
+        >,
     ICommentAppService
 {
     private readonly IRepository<Comment, Guid> _repository;
@@ -27,7 +33,8 @@ public class CommentAppService :
 
     public CommentAppService(
      IRepository<Comment, Guid> repository,
-     IRepository<CommentFile, Guid> fileRepository) 
+     IRepository<CommentFile, Guid> fileRepository
+        ) 
      : base(repository)
     {
         _repository = repository;

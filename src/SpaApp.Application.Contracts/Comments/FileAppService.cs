@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.Application.Services;
 using Volo.Abp.Domain.Repositories;
-using Volo.Abp.Validation;
 
 namespace SpaApp.Comments
 {
-    public class FileAppService : ApplicationService, IFileAppService
+    public class FileAppService : 
+        ApplicationService, IFileAppService
     {
         private readonly IRepository<CommentFile, Guid> _fileRepository;
         private readonly IRepository<Comment, Guid> _commentRepository;
@@ -30,7 +30,8 @@ namespace SpaApp.Comments
         public FileAppService(
             IRepository<CommentFile, Guid> fileRepository,
             IRepository<Comment, Guid> commentRepository,
-            IHostingEnvironment environment)
+            IHostingEnvironment environment
+            )
         {
             _fileRepository = fileRepository;
             _commentRepository = commentRepository;
@@ -107,12 +108,6 @@ namespace SpaApp.Comments
         {
             try
             {
-                Logger.LogInformation("=== FILE APP SERVICE: UPLOAD TEXT ===");
-                Logger.LogInformation("FileName: {FileName}", input.FileName);
-                Logger.LogInformation("ContentType: {ContentType}", input.ContentType);
-                Logger.LogInformation("ContentLength: {ContentLength}", input.Content.Length);
-                Logger.LogInformation("CommentId: {CommentId}", input.CommentId);
-
                 ValidateFileInput(input);
 
                 if (!IsValidTextFile(input.FileName, input.Content.Length))
@@ -259,7 +254,7 @@ namespace SpaApp.Comments
                 using var ms = new MemoryStream(imageData);
                 using var image = Image.FromStream(ms);
 
-                if (image.Width <= MaxImageWidth && 
+                if (image.Width <= MaxImageWidth &&
                     image.Height <= MaxImageHeight)
                 {
                     return imageData;
@@ -298,7 +293,7 @@ namespace SpaApp.Comments
             if (image.RawFormat.Equals(ImageFormat.Png)) return ImageFormat.Png;
             if (image.RawFormat.Equals(ImageFormat.Gif)) return ImageFormat.Gif;
 
-            return ImageFormat.Jpeg; 
+            return ImageFormat.Jpeg;
         }
 
         private bool IsValidImageFormat(string contentType)
