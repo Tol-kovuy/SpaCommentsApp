@@ -1,7 +1,7 @@
-// src/app/comment/comment-preview/comment-preview.component.ts
-import { Component, Input, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CreateUpdateCommentDto } from '../models/comment';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-comment-preview',
@@ -15,6 +15,7 @@ export class CommentPreviewComponent implements OnChanges, OnDestroy {
   @Input() selectedFile: File | null = null;
 
   filePreviewUrl: string | null = null;
+  private sanitizer = inject(DomSanitizer);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['selectedFile'] && this.selectedFile) {
@@ -49,5 +50,21 @@ export class CommentPreviewComponent implements OnChanges, OnDestroy {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  sanitizeHtml(html: string): SafeHtml {
+    if (!html) return 'No text provided yet...';
+
+    const cleanHtml = html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+      .replace(/on\w+="[^"]*"/g, '')
+      .replace(/on\w+='[^']*'/g, '')
+      .replace(/javascript:/gi, '')
+      .replace(/<!\[CDATA\[.*?\]\]>/g, '')
+      .replace(/<!DOCTYPE[^>]*>/gi, '')
+      .replace(/<!ENTITY[^>]*>/gi, '');
+
+    return this.sanitizer.bypassSecurityTrustHtml(cleanHtml);
   }
 }

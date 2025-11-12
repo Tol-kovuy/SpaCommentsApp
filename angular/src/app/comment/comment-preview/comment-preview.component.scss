@@ -274,6 +274,83 @@
   }
 }
 
+.comment-text {
+  line-height: 1.6;
+  color: #2c3e50;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin-bottom: 16px;
+  // Стили для HTML тегов в превью
+  i, em {
+    font-style: italic;
+  }
+
+  strong, b {
+    font-weight: 600;
+    color: #1a365d;
+  }
+
+  code {
+    background-color: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+    border: 1px solid #e9ecef;
+    color: #e83e8c;
+  }
+
+  a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+      color: #0056b3;
+    }
+  }
+  
+  * {
+    margin: 0;
+    padding: 0;
+    line-height: inherit;
+  }
+
+  p {
+    margin-bottom: 8px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+  
+  pre {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 8px 0;
+    overflow-x: auto;
+
+    code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: #495057;
+    }
+  }
+
+  blockquote {
+    border-left: 4px solid #007bff;
+    padding-left: 16px;
+    margin: 12px 0;
+    color: #6c757d;
+    font-style: italic;
+  }
+}
+
 @media (max-width: 768px) {
   .preview-card-header {
     flex-direction: column;

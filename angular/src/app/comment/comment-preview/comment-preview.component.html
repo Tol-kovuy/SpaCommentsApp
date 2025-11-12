@@ -27,7 +27,7 @@
     </div>
 
     <div class="preview-card-body">
-      <div class="comment-text">{{commentData.text || 'No text provided yet...'}}</div>
+      <div class="comment-text" [innerHTML]="sanitizeHtml(commentData.text)"></div>
 
       <!-- File preview for selected file (before upload) -->
       <div class="file-preview" *ngIf="selectedFile">
