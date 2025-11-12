@@ -3,11 +3,13 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { CommentService } from '../services/comment.service';
 import { CreateUpdateCommentDto } from '../models/comment';
 import { CommonModule } from '@angular/common';
-import { FileService, TextFileUploadResult, FileUploadResult } from '../../services/file.service';
+import { FileService } from '../../services/file.service';
 import { LightboxService } from '../../services/lightbox.service';
 import { firstValueFrom } from 'rxjs';
 import { CaptchaComponent } from '../captcha/captcha.component';
 import { CommentPreviewComponent } from '../comment-preview/comment-preview.component';
+import { HtmlValidatorService } from '../services/html-validator.service';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-comment-form',
@@ -25,12 +27,14 @@ export class CommentFormComponent implements OnDestroy {
   @Output() commentAdded = new EventEmitter<void>();
   @ViewChild(CaptchaComponent) captchaComp: CaptchaComponent;
 
-  @Input() parentId?: string; 
+  @Input() parentId?: string;
   @Input() isReply: boolean = false;
 
   private fileService = inject(FileService);
   private lightboxService = inject(LightboxService);
   private commentService = inject(CommentService);
+  private htmlValidator = inject(HtmlValidatorService);
+  private sanitizer = inject(DomSanitizer);
 
   commentForm: FormGroup;
   isSubmitting = false;
@@ -44,6 +48,8 @@ export class CommentFormComponent implements OnDestroy {
   captchaServerError: string | null = null;
 
   showHtmlPanel = false;
+  htmlValidationErrors: string[] = [];
+  showHtmlValidation = false;
   htmlButtons = [
     { tag: 'i', icon: 'I', title: 'Italic' },
     { tag: 'strong', icon: 'B', title: 'Bold' },
@@ -51,9 +57,7 @@ export class CommentFormComponent implements OnDestroy {
     { tag: 'a', icon: '🔗', title: 'Link' }
   ];
 
-  constructor(
-    private fb: FormBuilder
-  ) {
+  constructor(private fb: FormBuilder) {
     const captchaValidators = this.isReply ? [] : [Validators.required];
 
     this.commentForm = this.fb.group({
@@ -63,22 +67,20 @@ export class CommentFormComponent implements OnDestroy {
       text: ['', [Validators.required, Validators.minLength(5)]],
       captcha: ['', captchaValidators]
     });
+
+    // Валидация HTML при изменении текста
+    this.commentForm.get('text')?.valueChanges.subscribe(() => {
+      setTimeout(() => this.validateHtml(), 300);
+    });
   }
 
   onFileSelected(event: any): void {
     const file = event.target.files[0];
-    console.log('📁 File selected:', file);
     if (!file) return;
 
     this.selectedFile = file;
     this.uploadedFileId = null;
     this.fileError = '';
-
-    console.log('📊 File details:', {
-      name: file.name,
-      type: file.type,
-      size: file.size
-    });
 
     if (file.type.startsWith('image/')) {
       const validation = this.fileService.validateImage(file);
@@ -147,11 +149,7 @@ export class CommentFormComponent implements OnDestroy {
   }
 
   async onSubmit(): Promise<void> {
-    console.log('SUBMISSION START - Is Reply:', this.isReply);
-
-    if (this.commentForm.valid && !this.isSubmitting) {
-      console.log('Form is valid, proceeding...');
-
+    if (this.commentForm.valid && !this.isSubmitting && this.isHtmlValid()) {
       this.isSubmitting = true;
       this.fileError = '';
       this.captchaServerError = '';
@@ -160,38 +158,28 @@ export class CommentFormComponent implements OnDestroy {
         const formValue = this.commentForm.value;
         let fileId: string | null = null;
 
-        if (!this.isReply) {
-          if (!this.captchaId) {
-            this.captchaServerError = 'CAPTCHA not loaded. Please refresh the page.';
-            this.isSubmitting = false;
-            return;
-          }
+        if (!this.isReply && !this.captchaId) {
+          this.captchaServerError = 'CAPTCHA not loaded. Please refresh the page.';
+          this.isSubmitting = false;
+          return;
         }
 
         if (this.selectedFile) {
-          console.log('File detected, uploading first...');
           fileId = await this.uploadFileWithPromise(this.selectedFile);
-          console.log('File uploaded successfully, fileId:', fileId);
         }
-
-        console.log('Creating comment with fileId:', fileId);
 
         const createCommentDto: CreateUpdateCommentDto = {
           userName: formValue.userName,
           email: formValue.email,
           homepage: formValue.homepage || '',
           text: formValue.text,
-          captcha: this.isReply ? 'not-required-for-replies' : formValue.captcha, 
+          captcha: this.isReply ? 'not-required-for-replies' : formValue.captcha,
           captchaId: this.isReply ? 'not-required-for-replies' : this.captchaId,
           fileId: fileId || undefined,
           parentId: this.parentId
         };
 
-        console.log('🔍 Final DTO for comment creation:', createCommentDto);
-
         const result = await firstValueFrom(this.commentService.createComment(createCommentDto));
-        console.log('Comment created successfully:', result);
-
         this.onSuccess();
 
       } catch (error: any) {
@@ -207,19 +195,15 @@ export class CommentFormComponent implements OnDestroy {
         this.isSubmitting = false;
       }
     } else {
-      console.log('Form is invalid');
       this.markFormGroupTouched();
+      if (!this.isHtmlValid()) {
+        this.showHtmlValidation = true;
+      }
     }
   }
 
   private async uploadFileWithPromise(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
-      console.log('Starting file upload...', {
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type
-      });
-
       let uploadObservable;
 
       if (file.type.startsWith('image/')) {
@@ -228,20 +212,33 @@ export class CommentFormComponent implements OnDestroy {
         uploadObservable = this.fileService.uploadTextFile(file);
       }
 
-      uploadObservable.subscribe({
+      // Используем any для обхода проблем с типами
+      (uploadObservable as any).subscribe({
         next: (result: any) => {
           console.log('File uploaded successfully:', result);
 
-          const fileId = result.id;
+          // Разные варианты получения fileId в зависимости от типа ответа
+          let fileId: string | null = null;
+
+          if (result.id) {
+            fileId = result.id;
+          } else if (result.fileId) {
+            fileId = result.fileId;
+          } else if (result.data?.id) {
+            fileId = result.data.id;
+          } else if (typeof result === 'string') {
+            fileId = result;
+          }
+
           if (fileId) {
             console.log('File ID found:', fileId);
             resolve(fileId);
           } else {
-            console.error('File ID not found in response');
+            console.error('File ID not found in response:', result);
             reject(new Error('File ID not found in response'));
           }
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('File upload failed:', error);
 
           let errorMessage = 'File upload failed';
@@ -251,6 +248,8 @@ export class CommentFormComponent implements OnDestroy {
             errorMessage = 'Access denied. Please check permissions.';
           } else if (error.status === 413) {
             errorMessage = 'File too large';
+          } else if (error.error?.message) {
+            errorMessage = error.error.message;
           }
 
           reject(new Error(errorMessage));
@@ -265,8 +264,6 @@ export class CommentFormComponent implements OnDestroy {
   }
 
   private onError(error: any): void {
-    console.error('Submission error details:', error);
-
     if (error.error?.validationErrors) {
       error.error.validationErrors.forEach((valError: any) => {
         this.fileError = valError.message || 'Validation error';
@@ -291,6 +288,8 @@ export class CommentFormComponent implements OnDestroy {
     this.clearFile();
     this.showPreview = false;
     this.fileError = '';
+    this.htmlValidationErrors = [];
+    this.showHtmlValidation = false;
     this.captchaComp?.loadCaptcha();
   }
 
@@ -301,43 +300,39 @@ export class CommentFormComponent implements OnDestroy {
     });
   }
 
-  get userName() { return this.commentForm.get('userName'); }
-  get email() { return this.commentForm.get('email'); }
-  get homepage() { return this.commentForm.get('homepage'); }
-  get text() { return this.commentForm.get('text'); }
-  get captcha() { return this.commentForm.get('captcha'); }
-
-  ngOnDestroy(): void {
-    if (this.filePreview) {
-      this.fileService.revokeObjectURL(this.filePreview);
-    }
+  // HTML Validation Methods
+  validateHtml(): void {
+    const text = this.commentForm.get('text')?.value || '';
+    const validation = this.htmlValidator.validateXHTML(text);
+    this.htmlValidationErrors = validation.errors;
+    this.showHtmlValidation = this.htmlValidationErrors.length > 0;
   }
 
-  togglePreview(): void {
-    this.showPreview = !this.showPreview;
+  autoFixHtml(): void {
+    const text = this.commentForm.get('text')?.value || '';
+    const fixedText = this.htmlValidator.autoFixXHTML(text);
+    this.commentForm.get('text')?.setValue(fixedText);
+    this.validateHtml();
   }
 
-  canSubmit(): boolean {
-    if (this.isReply) {
-      return this.commentForm.valid && !this.isSubmitting;
-    } else {
-      return this.commentForm.valid && !this.isSubmitting && !!this.captchaId;
-    }
+  isHtmlValid(): boolean {
+    return this.htmlValidationErrors.length === 0;
   }
 
-  get previewData(): CreateUpdateCommentDto {
-    const formValue = this.commentForm.value;
+  sanitizeHtml(html: string): SafeHtml {
+    if (!html) return '';
 
-    return {
-      userName: formValue.userName || '',
-      email: formValue.email || '',
-      homepage: formValue.homepage || '',
-      text: formValue.text || '',
-      captcha: this.isReply ? 'not-required-for-replies' : formValue.captcha || '',
-      captchaId: this.isReply ? 'not-required-for-replies' : this.captchaId || '',
-      fileId: this.uploadedFileId || undefined,
-      parentId: this.parentId
-    };
+    const cleanHtml = html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+      .replace(/on\w+="[^"]*"/g, '')
+      .replace(/on\w+='[^']*'/g, '')
+      .replace(/javascript:/gi, '')
+      .replace(/<!\[CDATA\[.*?\]\]>/g, '')
+      .replace(/<!DOCTYPE[^>]*>/gi, '')
+      .replace(/<!ENTITY[^>]*>/gi, '');
+
+    return this.sanitizer.bypassSecurityTrustHtml(cleanHtml);
   }
 
   insertHtmlTag(tag: string): void {
@@ -378,6 +373,7 @@ export class CommentFormComponent implements OnDestroy {
     textarea.value = before + newText + after;
 
     this.commentForm.get('text')?.setValue(textarea.value);
+    this.validateHtml();
 
     setTimeout(() => {
       textarea.focus();
@@ -385,56 +381,72 @@ export class CommentFormComponent implements OnDestroy {
     }, 0);
   }
 
-  private wrapWithTag(text: string, tag: string): string {
-    return `<${tag}>${text}</${tag}>`;
-  }
-
-  private getTextareaSelectionStart(): number {
-    const textarea = document.querySelector('#commentText') as HTMLTextAreaElement;
-    return textarea ? textarea.selectionStart : 0;
-  }
-
-  private getTextareaSelectionEnd(): number {
-    const textarea = document.querySelector('#commentText') as HTMLTextAreaElement;
-    return textarea ? textarea.selectionEnd : 0;
-  }
-
-  private setTextareaSelection(position: number): void {
-    const textarea = document.querySelector('#commentText') as HTMLTextAreaElement;
-    if (textarea) {
-      textarea.focus();
-      textarea.setSelectionRange(position, position);
-    }
-  }
-
   insertLink(): void {
     const url = prompt('Enter URL:', 'https://');
     if (!url) return;
 
-    const textarea = this.commentForm.get('text');
+    const textarea = document.querySelector('#commentText') as HTMLTextAreaElement;
     if (!textarea) return;
 
-    const currentText = textarea.value || '';
-    const selectionStart = this.getTextareaSelectionStart();
-    const selectionEnd = this.getTextareaSelectionEnd();
-
-    const selectedText = currentText.substring(selectionStart, selectionEnd);
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
     const linkText = selectedText || 'link';
 
     const newText = `<a href="${url}">${linkText}</a>`;
-    const beforeText = currentText.substring(0, selectionStart);
-    const afterText = currentText.substring(selectionEnd);
+    const before = textarea.value.substring(0, start);
+    const after = textarea.value.substring(end);
+    textarea.value = before + newText + after;
 
-    const finalText = beforeText + newText + afterText;
-    textarea.setValue(finalText);
+    this.commentForm.get('text')?.setValue(textarea.value);
+    this.validateHtml();
 
-    const newCursorPos = selectionStart + newText.length;
     setTimeout(() => {
-      this.setTextareaSelection(newCursorPos);
+      textarea.focus();
+      textarea.setSelectionRange(start + newText.length, start + newText.length);
     }, 0);
   }
 
   toggleHtmlPanel(): void {
     this.showHtmlPanel = !this.showHtmlPanel;
+  }
+
+  togglePreview(): void {
+    this.showPreview = !this.showPreview;
+  }
+
+  canSubmit(): boolean {
+    if (this.isReply) {
+      return this.commentForm.valid && !this.isSubmitting && this.isHtmlValid();
+    } else {
+      return this.commentForm.valid && !this.isSubmitting && !!this.captchaId && this.isHtmlValid();
+    }
+  }
+
+  get previewData(): CreateUpdateCommentDto {
+    const formValue = this.commentForm.value;
+
+    return {
+      userName: formValue.userName || '',
+      email: formValue.email || '',
+      homepage: formValue.homepage || '',
+      text: formValue.text || '',
+      captcha: this.isReply ? 'not-required-for-replies' : formValue.captcha || '',
+      captchaId: this.isReply ? 'not-required-for-replies' : this.captchaId || '',
+      fileId: this.uploadedFileId || undefined,
+      parentId: this.parentId
+    };
+  }
+
+  get userName() { return this.commentForm.get('userName'); }
+  get email() { return this.commentForm.get('email'); }
+  get homepage() { return this.commentForm.get('homepage'); }
+  get text() { return this.commentForm.get('text'); }
+  get captcha() { return this.commentForm.get('captcha'); }
+
+  ngOnDestroy(): void {
+    if (this.filePreview) {
+      this.fileService.revokeObjectURL(this.filePreview);
+    }
   }
 }

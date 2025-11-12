@@ -1,5 +1,5 @@
 <div class="comment-form-container">
-  <h3>Add Comment</h3>
+  <h3>{{ isReply ? 'Add Reply' : 'Add Comment' }}</h3>
 
   <form class="comment-form" [formGroup]="commentForm" (ngSubmit)="onSubmit()">
     <div class="form-row">
@@ -46,12 +46,20 @@
     <div class="form-group">
       <div class="text-editor-header">
         <label for="text">Comment *</label>
-        <button type="button"
-                class="btn-html-toggle"
-                (click)="toggleHtmlPanel()"
-                [class.active]="showHtmlPanel">
-          HTML
-        </button>
+        <div class="text-editor-controls">
+          <button type="button"
+                  class="btn-html-toggle"
+                  (click)="toggleHtmlPanel()"
+                  [class.active]="showHtmlPanel">
+            HTML
+          </button>
+          <button type="button"
+                  class="btn-validate-html"
+                  (click)="validateHtml()"
+                  title="Validate HTML">
+            ✓ Validate
+          </button>
+        </div>
       </div>
 
       <!-- HTML панель с кнопками -->
@@ -92,6 +100,19 @@
                 rows="5"
                 formControlName="text"
                 placeholder="Your comment"></textarea>
+
+      <!-- Validation HTML -->
+      <div *ngIf="showHtmlValidation" class="html-validation">
+        <div class="validation-header">
+          <strong>HTML Validation Errors:</strong>
+        </div>
+        <div class="validation-errors">
+          <div *ngFor="let error of htmlValidationErrors" class="validation-error">
+            ❌ {{ error }}
+          </div>
+        </div>
+      </div>
+
       <div *ngIf="text?.invalid && text?.touched" class="error-message">
         <span *ngIf="text?.errors?.['required']">Comment text is required</span>
         <span *ngIf="text?.errors?.['minlength']">Comment must be at least 5 characters</span>
@@ -118,11 +139,14 @@
           Images: JPG, PNG, GIF (max 5MB, will be resized to 320×240px) | Text: TXT only (max 100KB)
         </small>
 
-        <!-- Preview Section -->
-        <div *ngIf="showPreview" class="preview-section">
-          <app-comment-preview [commentData]="previewData"
-                               [selectedFile]="selectedFile">
-          </app-comment-preview>
+        <!-- File Actions -->
+        <div *ngIf="selectedFile" class="file-actions">
+          <button type="button" class="btn-preview-file" (click)="previewFile()">
+            👁️ Preview
+          </button>
+          <button type="button" class="btn-clear-file" (click)="clearFile()">
+            🗑️ Remove
+          </button>
         </div>
       </div>
 
@@ -133,7 +157,7 @@
     </div>
 
     <!-- CAPTCHA Section -->
-    <div class="form-group">
+    <div *ngIf="!isReply" class="form-group">
       <label>CAPTCHA *</label>
       <div class="captcha-section">
         <app-captcha (captchaChanged)="onCaptchaChanged($event)"></app-captcha>
@@ -155,23 +179,24 @@
       <button type="button"
               class="btn-preview"
               (click)="togglePreview()"
-              [disabled]="isSubmitting || commentForm.invalid">
+              [disabled]="isSubmitting || commentForm.invalid || !isHtmlValid()">
         {{ showPreview ? 'Hide Preview' : 'Show Preview' }}
       </button>
 
       <button type="submit"
               class="btn-submit"
-              [disabled]="!canSubmit()">
+              [disabled]="!canSubmit()"
+              [class.loading]="isSubmitting">
         <span class="btn-icon">
           {{ isSubmitting ? '⏳' : '✓' }}
         </span>
-        {{ isSubmitting ? 'Submitting...' : 'Submit Comment' }}
+        {{ isSubmitting ? 'Submitting...' : (isReply ? 'Submit Reply' : 'Submit Comment') }}
       </button>
     </div>
   </form>
 
   <!-- Preview Section -->
-  <div *ngIf="showPreview && commentForm.valid" class="preview-section">
+  <div *ngIf="showPreview && commentForm.valid && isHtmlValid()" class="preview-section">
     <h4>Comment Preview</h4>
     <div class="preview-content card">
       <div class="card-body">
@@ -182,7 +207,7 @@
             • {{ commentForm.get('homepage')?.value }}
           </span>
         </div>
-        <p class="preview-text" [innerHTML]="commentForm.get('text')?.value"></p>
+        <p class="preview-text" [innerHTML]="sanitizeHtml(commentForm.get('text')?.value)"></p>
         <div *ngIf="selectedFile" class="preview-file">
           <small>Attached file: {{ selectedFile.name }}</small>
           <span class="file-status pending">⏳ Will be uploaded with comment</span>
