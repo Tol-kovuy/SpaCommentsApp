@@ -30,7 +30,8 @@ export interface CreateUpdateCommentDto {
   email: string;
   homepage?: string;
   text: string;
-  captcha?: string;
+  captcha: string; 
+  captchaId: string;
   fileId?: string;
   parentId?: string;
 }

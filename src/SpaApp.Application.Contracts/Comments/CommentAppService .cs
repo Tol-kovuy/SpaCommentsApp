@@ -204,10 +204,26 @@ public class CommentAppService :
     [Authorize(SpaAppPermissions.Comments.Create)]
     public override async Task<CommentDto> CreateAsync(CreateUpdateCommentDto input)
     {
-        Logger.LogInformation("=== CREATING COMMENT ===");
-        Logger.LogInformation("UserName: {UserName}", input.UserName);
-        Logger.LogInformation("FileId: {FileId}", input.FileId);
-        Logger.LogInformation("Text length: {TextLength}", input.Text?.Length);
+        Logger.LogInformation("Captcha provided: {CaptchaProvided}", !string.IsNullOrEmpty(input.Captcha));
+
+        if (string.IsNullOrEmpty(input.CaptchaId) || string.IsNullOrEmpty(input.Captcha))
+        {
+            Logger.LogWarning("CAPTCHA validation failed: CaptchaId or Captcha value is empty");
+            throw new UserFriendlyException("CAPTCHA is required");
+        }
+
+        var captchaService = ServiceProvider.GetRequiredService<ICaptchaService>();
+        bool isCaptchaValid = captchaService.ValidateCaptcha(input.CaptchaId, input.Captcha);
+
+        Logger.LogInformation("CAPTCHA validation result: {IsValid}", isCaptchaValid);
+
+        if (!isCaptchaValid)
+        {
+            Logger.LogWarning("CAPTCHA validation failed: Invalid captcha code");
+            throw new UserFriendlyException("Invalid CAPTCHA. Please try again.");
+        }
+
+        Logger.LogInformation("CAPTCHA validation successful");
 
         var comment = ObjectMapper.Map<CreateUpdateCommentDto, Comment>(input);
 
@@ -227,33 +243,29 @@ public class CommentAppService :
         }
 
         var commentDto = ObjectMapper.Map<Comment, CommentDto>(comment);
-    
-    if (input.FileId.HasValue)
-    {
-        var fileRepository = ServiceProvider.GetRequiredService<IRepository<CommentFile, Guid>>();
-        var file = await fileRepository.FirstOrDefaultAsync(f => f.Id == input.FileId.Value);
-        
-        if (file != null)
-        {
-            commentDto.FileId = file.Id;
-            commentDto.FileName = file.FileName;
-            commentDto.FileType = file.FileType;
-            commentDto.FileSize = file.FileSize;
-            commentDto.PreviewUrl = $"/api/app/file/{file.Id}"; 
-        }
-    }
 
-    return commentDto;
+        if (input.FileId.HasValue)
+        {
+            var fileRepository = ServiceProvider.GetRequiredService<IRepository<CommentFile, Guid>>();
+            var file = await fileRepository.FirstOrDefaultAsync(f => f.Id == input.FileId.Value);
+
+            if (file != null)
+            {
+                commentDto.FileId = file.Id;
+                commentDto.FileName = file.FileName;
+                commentDto.FileType = file.FileType;
+                commentDto.FileSize = file.FileSize;
+                commentDto.PreviewUrl = $"/api/app/file/{file.Id}";
+            }
+        }
+
+        return commentDto;
     }
 
     private async Task LinkFileToCommentAsync(Guid fileId, Guid commentId)
     {
         try
         {
-            Logger.LogInformation("=== LINKING FILE TO COMMENT ===");
-            Logger.LogInformation("FileId: {FileId}", fileId);
-            Logger.LogInformation("CommentId: {CommentId}", commentId);
-
             var fileRepository = ServiceProvider.GetRequiredService<IRepository<CommentFile, Guid>>();
 
             Logger.LogInformation("Getting file from repository...");

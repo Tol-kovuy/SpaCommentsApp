@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, inject, OnDestroy } from '@angular/core';
+import { Component, Output, EventEmitter, inject, OnDestroy, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommentService } from '../services/comment.service';
 import { CreateUpdateCommentDto } from '../models/comment';
@@ -6,13 +6,15 @@ import { CommonModule } from '@angular/common';
 import { FileService, TextFileUploadResult, FileUploadResult } from '../../services/file.service';
 import { LightboxService } from '../../services/lightbox.service';
 import { firstValueFrom } from 'rxjs';
+import { CaptchaComponent } from '../captcha/captcha.component';
 
 @Component({
   selector: 'app-comment-form',
   standalone: true,
   imports: [
     CommonModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    CaptchaComponent,
   ],
   templateUrl: './comment-form.component.html',
   styleUrls: ['./comment-form.component.scss']
@@ -32,6 +34,9 @@ export class CommentFormComponent implements OnDestroy {
   filePreview: string | null = null;
   isUploading = false;
   fileError: string = '';
+  captchaId: string | null = null;
+  captchaServerError: string | null = null;
+  @ViewChild(CaptchaComponent) captchaComp: CaptchaComponent;
 
   constructor(
     private fb: FormBuilder
@@ -41,7 +46,7 @@ export class CommentFormComponent implements OnDestroy {
       email: ['', [Validators.required, Validators.email]],
       homepage: [''],
       text: ['', [Validators.required, Validators.minLength(5)]],
-      captcha: ['', [Validators.required, Validators.pattern('^5$')]]
+      captcha: ['', [Validators.required]]
     });
   }
 
@@ -120,6 +125,12 @@ export class CommentFormComponent implements OnDestroy {
     }
   }
 
+  onCaptchaChanged(event: { captchaId: string | null }) {
+    this.captchaId = event.captchaId;
+    this.captchaServerError = null;
+    this.commentForm.get('captcha')?.reset();
+  }
+
   async onSubmit(): Promise<void> {
     console.log('SUBMISSION START');
 
@@ -129,10 +140,17 @@ export class CommentFormComponent implements OnDestroy {
 
       this.isSubmitting = true;
       this.fileError = '';
+      this.captchaServerError = '';
 
       try {
         const formValue = this.commentForm.value;
         let fileId: string | null = null;
+
+        if (!this.captchaId) {
+          this.captchaServerError = 'CAPTCHA not loaded. Please refresh the page.';
+          this.isSubmitting = false;
+          return;
+        }
 
         if (this.selectedFile) {
           console.log('File detected, uploading first...');
@@ -141,13 +159,15 @@ export class CommentFormComponent implements OnDestroy {
         }
 
         console.log('Creating comment with fileId:', fileId);
+
         const createCommentDto: CreateUpdateCommentDto = {
           userName: formValue.userName,
           email: formValue.email,
           homepage: formValue.homepage || '',
           text: formValue.text,
           captcha: formValue.captcha,
-          fileId: fileId 
+          captchaId: this.captchaId, 
+          fileId: fileId || undefined
         };
 
         console.log('🔍 Final DTO for comment creation:', createCommentDto);
@@ -157,59 +177,27 @@ export class CommentFormComponent implements OnDestroy {
 
         this.onSuccess();
 
-      } catch (error) {
-        console.error('❌ Submission error:', error);
-        this.onError(error);
+      } catch (error: any) {
+        console.error('Submission error:', error);
+        if (error.error && (error.error.error === 'Invalid captcha' || error.error?.message?.includes('captcha'))) {
+          this.captchaServerError = 'CAPTCHA invalid, try again!';
+          this.captchaComp?.loadCaptcha();
+          this.commentForm.get('captcha')?.reset();
+        } else {
+          this.onError(error);
+        }
       } finally {
         this.isSubmitting = false;
       }
     } else {
-      console.log('❌ Form is invalid');
+      console.log('Form is invalid');
       this.markFormGroupTouched();
     }
   }
 
-  private async submitWithFile(file: File): Promise<void> {
-    try {
-      console.log('1Creating comment first...');
-
-      const createCommentDto = this.buildCreateCommentDto(null);
-      console.log('🔍 Create DTO (FileId should be null):', createCommentDto);
-
-      const createdComment = await firstValueFrom(
-        this.commentService.createComment(createCommentDto)
-      );
-
-      console.log('Comment created with ID:', createdComment.id);
-
-      console.log('2 Uploading file with commentId:', createdComment.id);
-      const fileId = await this.uploadFileWithPromise(file);
-
-      console.log('3: Updating comment with fileId:', fileId);
-      const updateCommentDto = this.buildUpdateCommentDto(fileId);
-      console.log('Update DTO:', updateCommentDto);
-
-      const updatedComment = await firstValueFrom(
-        this.commentService.updateComment(createdComment.id, updateCommentDto)
-      );
-
-      console.log('Done created and updated comment with file!');
-      console.log('final comment:', updatedComment);
-
-    } catch (error) {
-      console.error('Errrrrrr:', error);
-      throw error;
-    }
-  }
-
-  private async submitWithoutFile(): Promise<void> {
-    const createCommentDto = this.buildCreateCommentDto(null);
-    await firstValueFrom(this.commentService.createComment(createCommentDto));
-  }
-
   private async uploadFileWithPromise(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
-      console.log('🚀 Starting file upload...', {
+      console.log('Starting file upload...', {
         fileName: file.name,
         fileSize: file.size,
         fileType: file.type
@@ -254,28 +242,6 @@ export class CommentFormComponent implements OnDestroy {
     });
   }
 
-  private buildCreateCommentDto(fileId: string | null): CreateUpdateCommentDto {
-    return {
-      userName: this.commentForm.value.userName,
-      email: this.commentForm.value.email,
-      homepage: this.commentForm.value.homepage,
-      text: this.commentForm.value.text,
-      fileId: fileId,
-      captcha: this.commentForm.value.captcha
-    };
-  }
-
-  private buildUpdateCommentDto(fileId: string): CreateUpdateCommentDto {
-    return {
-      userName: this.commentForm.value.userName,
-      email: this.commentForm.value.email,
-      homepage: this.commentForm.value.homepage,
-      text: this.commentForm.value.text,
-      fileId: fileId,
-      captcha: this.commentForm.value.captcha
-    };
-  }
-
   private onSuccess(): void {
     this.commentAdded.emit();
     this.resetForm();
@@ -308,6 +274,7 @@ export class CommentFormComponent implements OnDestroy {
     this.clearFile();
     this.showPreview = false;
     this.fileError = '';
+    this.captchaComp?.loadCaptcha();
   }
 
   private markFormGroupTouched(): void {
@@ -334,6 +301,6 @@ export class CommentFormComponent implements OnDestroy {
   }
 
   canSubmit(): boolean {
-    return this.commentForm.valid && !this.isSubmitting;
+    return this.commentForm.valid && !this.isSubmitting && !!this.captchaId;
   }
 }

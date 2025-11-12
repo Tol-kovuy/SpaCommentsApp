@@ -10,6 +10,7 @@ namespace SpaApp.Comments.Dtos
         public string? Homepage { get; set; }
         public string Text { get; set; }
         public string? Captcha { get; set; }
+        public string CaptchaId { get; set; }
         public Guid? FileId { get; set; }
     }
 }

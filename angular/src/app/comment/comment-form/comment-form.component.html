@@ -118,16 +118,17 @@
     <div class="form-group">
       <label>CAPTCHA *</label>
       <div class="captcha-section">
-        <p>CAPTCHA: What is 2 + 3?</p>
+        <app-captcha (captchaChanged)="onCaptchaChanged($event)"></app-captcha>
         <input type="text"
                class="form-control"
                formControlName="captcha"
-               placeholder="Enter answer">
+               placeholder="Enter symbols from image">
         <div *ngIf="captcha?.invalid && captcha?.touched" class="error-message">
           <span *ngIf="captcha?.errors?.['required']">CAPTCHA answer is required</span>
-          <span *ngIf="captcha?.errors?.['pattern']">Please enter the correct answer: 5</span>
         </div>
-        <small class="captcha-hint">Answer: 5</small>
+        <div *ngIf="captchaServerError" class="error-message">
+          {{ captchaServerError }}
+        </div>
       </div>
     </div>
 

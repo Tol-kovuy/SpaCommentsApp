@@ -21,7 +21,7 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
   styleUrls: ['./comment-list.component.scss']
 })
 export class CommentListComponent implements OnInit {
-  comments: CommentDto[] = []; 
+  comments: CommentDto[] = [];
   totalCount = 0;
   pageSize = 25;
   currentPage = 1;
@@ -161,10 +161,8 @@ export class CommentListComponent implements OnInit {
 
     const imageUrl = this.getImageUrl(comment);
     if (imageUrl) {
-      // Если изображение уже в кэше, показываем его
       this.showImageModal(comment.fileName || 'image', imageUrl.toString());
     } else {
-      // Если изображения нет в кэше, загружаем и показываем
       this.loadingImages.add(comment.fileId);
 
       this.fileService.getFileContent(comment.fileId).subscribe({
@@ -173,27 +171,21 @@ export class CommentListComponent implements OnInit {
             let imageData: string;
 
             if (this.isJson(content)) {
-              // Если ответ в JSON формате
               const fileData = JSON.parse(content);
               if (fileData.content) {
-                // Декодируем base64
                 imageData = 'data:image/jpeg;base64,' + fileData.content;
               } else {
-                // Пытаемся создать URL из бинарных данных
                 const blob = new Blob([content], { type: 'image/jpeg' });
                 imageData = URL.createObjectURL(blob);
               }
             } else {
-              // Если это бинарные данные
               const blob = new Blob([content], { type: 'image/jpeg' });
               imageData = URL.createObjectURL(blob);
             }
 
-            // Сохраняем в кэш
             const safeUrl = this.sanitizer.bypassSecurityTrustUrl(imageData);
             this.imageCache.set(comment.fileId!, safeUrl);
 
-            // Показываем модальное окно
             this.showImageModal(comment.fileName || 'image', imageData);
 
           } catch (error) {
@@ -314,17 +306,17 @@ export class CommentListComponent implements OnInit {
     this.loadParentComments();
   }
 
- onSortChange(sortField: string): void {
-  if (this.sorting.includes(sortField)) {
-    this.sorting = this.sorting.includes('desc')
-      ? `${sortField} asc`
-      : `${sortField} desc`;
-  } else {
-    this.sorting = `${sortField} desc`;
+  onSortChange(sortField: string): void {
+    if (this.sorting.includes(sortField)) {
+      this.sorting = this.sorting.includes('desc')
+        ? `${sortField} asc`
+        : `${sortField} desc`;
+    } else {
+      this.sorting = `${sortField} desc`;
+    }
+    this.currentPage = 1;
+    this.loadParentComments();
   }
-  this.currentPage = 1; 
-  this.loadParentComments();
-}
 
   onFilterChange(): void {
     this.currentPage = 1;
@@ -379,12 +371,16 @@ export class CommentListComponent implements OnInit {
   }
 
   onSubmitReply(event: { parentCommentId: string, text: string, userName: string }): void {
+    // ВРЕМЕННОЕ РЕШЕНИЕ - используем временные значения для капчи
+    // В реальном приложении нужно добавить капчу в форму ответов
     const replyDto: CreateUpdateCommentDto = {
       userName: event.userName.trim() || 'Anonymous',
       email: '',
       homepage: '',
       text: event.text.trim(),
-      parentId: event.parentCommentId
+      parentId: event.parentCommentId,
+      captchaId: 'temp-reply-captcha-id', // временное значение
+      captcha: 'temp-reply-captcha'       // временное значение
     };
 
     this.tempReplyCounter++;
@@ -416,6 +412,7 @@ export class CommentListComponent implements OnInit {
       },
       error: (error) => {
         this.removeTempReply(event.parentCommentId, tempId);
+        console.error('Error submitting reply:', error);
       }
     });
   }
@@ -505,12 +502,12 @@ export class CommentListComponent implements OnInit {
   }
 
   formatFileSize(bytes: number): string {
-  if (!bytes) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
+    if (!bytes) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
 
   viewFile(comment: CommentDto, event: Event): void {
     event.stopPropagation();
@@ -625,11 +622,11 @@ export class CommentListComponent implements OnInit {
     document.body.appendChild(modal);
   }
 
-hasFile(comment: CommentDto): boolean {
-  return !!comment.fileId;
-}
+  hasFile(comment: CommentDto): boolean {
+    return !!comment.fileId;
+  }
 
-getFileType(comment: CommentDto): string {
-  return comment.fileType || 'unknown';
-}
+  getFileType(comment: CommentDto): string {
+    return comment.fileType || 'unknown';
+  }
 }

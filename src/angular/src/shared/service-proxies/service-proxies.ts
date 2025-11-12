@@ -900,6 +900,174 @@ export class ServiceProxy {
         return _observableOf(null as any);
     }
 
+    captcha(): Observable<void> {
+        let url_ = this.baseUrl + "/api/app/captcha";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCaptcha(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCaptcha(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processCaptcha(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = RemoteServiceErrorResponse.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            }));
+        } else if (status === 401) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = RemoteServiceErrorResponse.fromJS(resultData401);
+            return throwException("Unauthorized", status, _responseText, _headers, result401);
+            }));
+        } else if (status === 403) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result403: any = null;
+            let resultData403 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result403 = RemoteServiceErrorResponse.fromJS(resultData403);
+            return throwException("Forbidden", status, _responseText, _headers, result403);
+            }));
+        } else if (status === 404) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = RemoteServiceErrorResponse.fromJS(resultData404);
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            }));
+        } else if (status === 500) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = RemoteServiceErrorResponse.fromJS(resultData500);
+            return throwException("Internal Server Error", status, _responseText, _headers, result500);
+            }));
+        } else if (status === 501) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result501: any = null;
+            let resultData501 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result501 = RemoteServiceErrorResponse.fromJS(resultData501);
+            return throwException("Not Implemented", status, _responseText, _headers, result501);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    validate(body: CaptchaValidateDto | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/app/captcha/validate";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processValidate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processValidate(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processValidate(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = RemoteServiceErrorResponse.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            }));
+        } else if (status === 401) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = RemoteServiceErrorResponse.fromJS(resultData401);
+            return throwException("Unauthorized", status, _responseText, _headers, result401);
+            }));
+        } else if (status === 403) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result403: any = null;
+            let resultData403 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result403 = RemoteServiceErrorResponse.fromJS(resultData403);
+            return throwException("Forbidden", status, _responseText, _headers, result403);
+            }));
+        } else if (status === 404) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = RemoteServiceErrorResponse.fromJS(resultData404);
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            }));
+        } else if (status === 500) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = RemoteServiceErrorResponse.fromJS(resultData500);
+            return throwException("Internal Server Error", status, _responseText, _headers, result500);
+            }));
+        } else if (status === 501) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result501: any = null;
+            let resultData501 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result501 = RemoteServiceErrorResponse.fromJS(resultData501);
+            return throwException("Not Implemented", status, _responseText, _headers, result501);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
     /**
      * @param filter (optional) 
      * @param sorting (optional) 
@@ -6484,6 +6652,46 @@ export interface ICommentDto {
     repliesLoaded?: boolean;
 }
 
+export class CaptchaValidateDto implements ICaptchaValidateDto {
+    captchaId?: string | undefined;
+    value?: string | undefined;
+
+    constructor(data?: ICaptchaValidateDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.captchaId = _data["captchaId"];
+            this.value = _data["value"];
+        }
+    }
+
+    static fromJS(data: any): CaptchaValidateDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CaptchaValidateDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["captchaId"] = this.captchaId;
+        data["value"] = this.value;
+        return data;
+    }
+}
+
+export interface ICaptchaValidateDto {
+    captchaId?: string | undefined;
+    value?: string | undefined;
+}
+
 export class CommentFileDto implements ICommentFileDto {
     id?: string;
     fileName?: string | undefined;
@@ -6567,6 +6775,7 @@ export class CreateUpdateCommentDto implements ICreateUpdateCommentDto {
     homepage?: string | undefined;
     text?: string | undefined;
     captcha?: string | undefined;
+    captchaId?: string | undefined;
     fileId?: string | undefined;
 
     constructor(data?: ICreateUpdateCommentDto) {
@@ -6586,6 +6795,7 @@ export class CreateUpdateCommentDto implements ICreateUpdateCommentDto {
             this.homepage = _data["homepage"];
             this.text = _data["text"];
             this.captcha = _data["captcha"];
+            this.captchaId = _data["captchaId"];
             this.fileId = _data["fileId"];
         }
     }
@@ -6605,6 +6815,7 @@ export class CreateUpdateCommentDto implements ICreateUpdateCommentDto {
         data["homepage"] = this.homepage;
         data["text"] = this.text;
         data["captcha"] = this.captcha;
+        data["captchaId"] = this.captchaId;
         data["fileId"] = this.fileId;
         return data;
     }
@@ -6617,6 +6828,7 @@ export interface ICreateUpdateCommentDto {
     homepage?: string | undefined;
     text?: string | undefined;
     captcha?: string | undefined;
+    captchaId?: string | undefined;
     fileId?: string | undefined;
 }
 
