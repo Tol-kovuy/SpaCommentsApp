@@ -1,3 +1,4 @@
+<!-- comment-item.component.html -->
 <div class="comment-item level-{{level}}">
   <div class="comment-content">
     <div class="comment-header">
@@ -13,7 +14,7 @@
       <span class="comment-date">{{comment.creationTime | date:'dd.MM.yy в HH:mm'}}</span>
     </div>
 
-    <div class="comment-text">{{comment.text}}</div>
+    <div class="comment-text" [innerHTML]="sanitizeHtml(comment.text)"></div>
 
     <div *ngIf="hasFile(comment)" class="comment-file">
       <div class="file-attachment" [class.image-attachment]="isImageFile(comment) && getImageUrl(comment)">

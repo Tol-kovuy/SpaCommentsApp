@@ -1,5 +1,5 @@
 <div class="comment-form-container">
-  <h3>{{ isReply ? 'Add Reply' : 'Add Comment' }}</h3>
+  <h3>Add Comment</h3>
 
   <form class="comment-form" [formGroup]="commentForm" (ngSubmit)="onSubmit()">
     <div class="form-row">
@@ -44,8 +44,50 @@
     </div>
 
     <div class="form-group">
-      <label for="text">Comment *</label>
-      <textarea id="text"
+      <div class="text-editor-header">
+        <label for="text">Comment *</label>
+        <button type="button"
+                class="btn-html-toggle"
+                (click)="toggleHtmlPanel()"
+                [class.active]="showHtmlPanel">
+          HTML
+        </button>
+      </div>
+
+      <!-- HTML панель с кнопками -->
+      <div *ngIf="showHtmlPanel" class="html-panel">
+        <div class="html-buttons">
+          <button type="button"
+                  class="html-btn"
+                  (click)="insertHtmlTag('i')"
+                  title="Italic">
+            <i>I</i>
+          </button>
+          <button type="button"
+                  class="html-btn"
+                  (click)="insertHtmlTag('strong')"
+                  title="Bold">
+            <strong>B</strong>
+          </button>
+          <button type="button"
+                  class="html-btn"
+                  (click)="insertHtmlTag('code')"
+                  title="Code">
+            &lt;/&gt;
+          </button>
+          <button type="button"
+                  class="html-btn"
+                  (click)="insertLink()"
+                  title="Insert Link">
+            🔗
+          </button>
+        </div>
+        <div class="html-hint">
+          Select text and click buttons to wrap with HTML tags
+        </div>
+      </div>
+
+      <textarea id="commentText"
                 class="form-control"
                 rows="5"
                 formControlName="text"
@@ -91,7 +133,7 @@
     </div>
 
     <!-- CAPTCHA Section -->
-    <div class="form-group" *ngIf="!isReply">
+    <div class="form-group">
       <label>CAPTCHA *</label>
       <div class="captcha-section">
         <app-captcha (captchaChanged)="onCaptchaChanged($event)"></app-captcha>
@@ -123,7 +165,7 @@
         <span class="btn-icon">
           {{ isSubmitting ? '⏳' : '✓' }}
         </span>
-        {{ isSubmitting ? 'Submitting...' : (isReply ? 'Submit Reply' : 'Submit Comment') }}
+        {{ isSubmitting ? 'Submitting...' : 'Submit Comment' }}
       </button>
     </div>
   </form>
@@ -140,7 +182,7 @@
             • {{ commentForm.get('homepage')?.value }}
           </span>
         </div>
-        <p class="preview-text">{{ commentForm.get('text')?.value }}</p>
+        <p class="preview-text" [innerHTML]="commentForm.get('text')?.value"></p>
         <div *ngIf="selectedFile" class="preview-file">
           <small>Attached file: {{ selectedFile.name }}</small>
           <span class="file-status pending">⏳ Will be uploaded with comment</span>

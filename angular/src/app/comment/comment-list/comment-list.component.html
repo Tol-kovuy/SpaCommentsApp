@@ -43,7 +43,8 @@
                     </div>
                     <span class="comment-date">{{comment.creationTime | date:'dd.MM.yy в HH:mm'}}</span>
                   </div>
-                  <div class="comment-text-full">{{comment.text}}</div>
+
+                  <div class="comment-text-full" [innerHTML]="sanitizeHtml(comment.text)"></div>
 
                   <div *ngIf="hasFile(comment)" class="file-attachment">
                     <div class="file-info">

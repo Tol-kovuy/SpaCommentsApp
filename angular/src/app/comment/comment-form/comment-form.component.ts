@@ -43,6 +43,14 @@ export class CommentFormComponent implements OnDestroy {
   captchaId: string | null = null;
   captchaServerError: string | null = null;
 
+  showHtmlPanel = false;
+  htmlButtons = [
+    { tag: 'i', icon: 'I', title: 'Italic' },
+    { tag: 'strong', icon: 'B', title: 'Bold' },
+    { tag: 'code', icon: '</>', title: 'Code' },
+    { tag: 'a', icon: '🔗', title: 'Link' }
+  ];
+
   constructor(
     private fb: FormBuilder
   ) {
@@ -330,5 +338,103 @@ export class CommentFormComponent implements OnDestroy {
       fileId: this.uploadedFileId || undefined,
       parentId: this.parentId
     };
+  }
+
+  insertHtmlTag(tag: string): void {
+    const textarea = document.querySelector('#commentText') as HTMLTextAreaElement;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selectedText = textarea.value.substring(start, end);
+
+    let newText = '';
+    let cursorOffset = 0;
+
+    switch (tag) {
+      case 'i':
+        newText = `<i>${selectedText}</i>`;
+        cursorOffset = selectedText ? 3 + selectedText.length : 3;
+        break;
+      case 'strong':
+        newText = `<strong>${selectedText}</strong>`;
+        cursorOffset = selectedText ? 8 + selectedText.length : 8;
+        break;
+      case 'code':
+        newText = `<code>${selectedText}</code>`;
+        cursorOffset = selectedText ? 7 + selectedText.length : 7;
+        break;
+      case 'a':
+        const url = prompt('Enter URL:', 'https://');
+        if (!url) return;
+        const linkText = selectedText || 'link';
+        newText = `<a href="${url}">${linkText}</a>`;
+        cursorOffset = newText.length;
+        break;
+    }
+
+    const before = textarea.value.substring(0, start);
+    const after = textarea.value.substring(end);
+    textarea.value = before + newText + after;
+
+    this.commentForm.get('text')?.setValue(textarea.value);
+
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + cursorOffset, start + cursorOffset);
+    }, 0);
+  }
+
+  private wrapWithTag(text: string, tag: string): string {
+    return `<${tag}>${text}</${tag}>`;
+  }
+
+  private getTextareaSelectionStart(): number {
+    const textarea = document.querySelector('#commentText') as HTMLTextAreaElement;
+    return textarea ? textarea.selectionStart : 0;
+  }
+
+  private getTextareaSelectionEnd(): number {
+    const textarea = document.querySelector('#commentText') as HTMLTextAreaElement;
+    return textarea ? textarea.selectionEnd : 0;
+  }
+
+  private setTextareaSelection(position: number): void {
+    const textarea = document.querySelector('#commentText') as HTMLTextAreaElement;
+    if (textarea) {
+      textarea.focus();
+      textarea.setSelectionRange(position, position);
+    }
+  }
+
+  insertLink(): void {
+    const url = prompt('Enter URL:', 'https://');
+    if (!url) return;
+
+    const textarea = this.commentForm.get('text');
+    if (!textarea) return;
+
+    const currentText = textarea.value || '';
+    const selectionStart = this.getTextareaSelectionStart();
+    const selectionEnd = this.getTextareaSelectionEnd();
+
+    const selectedText = currentText.substring(selectionStart, selectionEnd);
+    const linkText = selectedText || 'link';
+
+    const newText = `<a href="${url}">${linkText}</a>`;
+    const beforeText = currentText.substring(0, selectionStart);
+    const afterText = currentText.substring(selectionEnd);
+
+    const finalText = beforeText + newText + afterText;
+    textarea.setValue(finalText);
+
+    const newCursorPos = selectionStart + newText.length;
+    setTimeout(() => {
+      this.setTextareaSelection(newCursorPos);
+    }, 0);
+  }
+
+  toggleHtmlPanel(): void {
+    this.showHtmlPanel = !this.showHtmlPanel;
   }
 }

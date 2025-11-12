@@ -6,7 +6,7 @@ import { CommentFormComponent } from '../comment-form/comment-form.component';
 import { CommentItemComponent } from '../comment-item/comment-item.component';
 import { FormsModule } from '@angular/forms';
 import { FileService } from '../../services/file.service';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeUrl, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-comment-list',
@@ -129,6 +129,23 @@ export class CommentListComponent implements OnInit {
       }
     });
   }
+
+  sanitizeHtml(html: string): SafeHtml {
+    if (!html) return '';
+
+    const cleanHtml = html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+      .replace(/on\w+="[^"]*"/g, '')
+      .replace(/on\w+='[^']*'/g, '')
+      .replace(/javascript:/gi, '')
+      .replace(/<!\[CDATA\[.*?\]\]>/g, '')
+      .replace(/<!DOCTYPE[^>]*>/gi, '')
+      .replace(/<!ENTITY[^>]*>/gi, '');
+
+    return this.sanitizer.bypassSecurityTrustHtml(cleanHtml);
+  }
+
 
   private createImageUrl(content: any, comment: CommentDto): string {
     if (typeof content === 'string' && content.startsWith('data:')) {

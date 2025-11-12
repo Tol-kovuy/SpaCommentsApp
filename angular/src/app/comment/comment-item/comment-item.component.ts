@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LightboxService } from '../../services/lightbox.service';
 import { FileService } from '../../services/file.service';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-comment-item',
@@ -28,8 +29,25 @@ export class CommentItemComponent {
 
   private lightboxService = inject(LightboxService);
   private fileService = inject(FileService);
+  private sanitizer = inject(DomSanitizer);
 
   constructor(private cdRef: ChangeDetectorRef) { }
+
+  sanitizeHtml(html: string): SafeHtml {
+    if (!html) return '';
+
+    const cleanHtml = html
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+      .replace(/on\w+="[^"]*"/g, '')
+      .replace(/on\w+='[^']*'/g, '')
+      .replace(/javascript:/gi, '')
+      .replace(/<!\[CDATA\[.*?\]\]>/g, '')
+      .replace(/<!DOCTYPE[^>]*>/gi, '')
+      .replace(/<!ENTITY[^>]*>/gi, '');
+
+    return this.sanitizer.bypassSecurityTrustHtml(cleanHtml);
+  }
 
   isReplyingTo(commentId: string): boolean {
     return this.showReplyFormFor === commentId;

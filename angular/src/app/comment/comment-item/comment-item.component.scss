@@ -241,3 +241,48 @@
     background: #545b62;
   }
 }
+
+.comment-text-full, .comment-text {
+  word-wrap: break-word;
+  line-height: 1.5;
+  i, em {
+    font-style: italic;
+  }
+
+  strong, b {
+    font-weight: bold;
+  }
+
+  code {
+    background: #f1f3f4;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    color: #d63384;
+    border: 1px solid #e0e0e0;
+  }
+
+  a {
+    color: #007bff;
+    text-decoration: none;
+    transition: color 0.2s;
+
+    &:hover {
+      color: #0056b3;
+      text-decoration: underline;
+    }
+
+    &:visited {
+      color: #6f42c1;
+    }
+  }
+
+  p {
+    margin: 0 0 8px 0;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
