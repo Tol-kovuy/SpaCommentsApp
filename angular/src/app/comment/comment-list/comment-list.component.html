@@ -53,10 +53,7 @@
                         </div>
                         <img *ngIf="getImageUrl(comment) && !isImageLoading(comment)"
                              [src]="getImageUrl(comment)"
-                             (click)="showImagePreview(comment, $event)"
-                             class="image-preview"
-                             alt="Preview"
-                             title="Click to enlarge">
+                             class="image-preview">
                         <div *ngIf="!getImageUrl(comment) && !isImageLoading(comment)" class="image-placeholder">
                           <button class="btn-load-preview"
                                   (click)="showImagePreview(comment, $event)">
@@ -65,10 +62,11 @@
                         </div>
                       </div>
 
-                      <button class="btn-view-file"
-                              (click)="$event.stopPropagation(); viewFile(comment, $event)"
-                              title="View full file">
-                        {{ isImageFile(comment) ? '👁️ Full Image' : '👁️ Show Text' }}
+                      <button *ngIf="!isImageFile(comment)"
+                              class="btn-view-file"
+                              (click)="viewFile(comment, $event)"
+                              title="View text file">
+                        Show Text
                       </button>
                     </div>
                   </div>

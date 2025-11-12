@@ -154,26 +154,57 @@ export class CommentListComponent implements OnInit {
   }
 
   showImagePreview(comment: CommentDto, event: Event): void {
+    event.preventDefault();
     event.stopPropagation();
 
     if (!comment.fileId || comment.fileType !== 'image') return;
 
     const imageUrl = this.getImageUrl(comment);
     if (imageUrl) {
+      // Если изображение уже в кэше, показываем его
       this.showImageModal(comment.fileName || 'image', imageUrl.toString());
     } else {
+      // Если изображения нет в кэше, загружаем и показываем
       this.loadingImages.add(comment.fileId);
 
       this.fileService.getFileContent(comment.fileId).subscribe({
         next: (content) => {
-          const imageData = this.createImageUrl(content, comment);
-          const safeUrl = this.sanitizer.bypassSecurityTrustUrl(imageData);
-          this.imageCache.set(comment.fileId!, safeUrl);
-          this.loadingImages.delete(comment.fileId);
-          this.showImageModal(comment.fileName || 'image', imageData);
+          try {
+            let imageData: string;
+
+            if (this.isJson(content)) {
+              // Если ответ в JSON формате
+              const fileData = JSON.parse(content);
+              if (fileData.content) {
+                // Декодируем base64
+                imageData = 'data:image/jpeg;base64,' + fileData.content;
+              } else {
+                // Пытаемся создать URL из бинарных данных
+                const blob = new Blob([content], { type: 'image/jpeg' });
+                imageData = URL.createObjectURL(blob);
+              }
+            } else {
+              // Если это бинарные данные
+              const blob = new Blob([content], { type: 'image/jpeg' });
+              imageData = URL.createObjectURL(blob);
+            }
+
+            // Сохраняем в кэш
+            const safeUrl = this.sanitizer.bypassSecurityTrustUrl(imageData);
+            this.imageCache.set(comment.fileId!, safeUrl);
+
+            // Показываем модальное окно
+            this.showImageModal(comment.fileName || 'image', imageData);
+
+          } catch (error) {
+            console.error('❌ Error processing image:', error);
+            alert('Error loading image');
+          } finally {
+            this.loadingImages.delete(comment.fileId);
+          }
         },
         error: (error) => {
-          console.error('❌ Error loading image for preview:', error);
+          console.error('❌ Error loading image:', error);
           this.loadingImages.delete(comment.fileId);
           alert('Error loading image');
         }
