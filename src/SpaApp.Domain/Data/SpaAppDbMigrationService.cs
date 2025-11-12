@@ -228,7 +228,6 @@ public class SpaAppDbMigrationService : ITransientDependency
 
     private async Task CreateClientsAsync()
     {
-        // Получаем менеджер клиентов OpenIddict
         var scope = _currentTenant as IServiceProvider ??
                     (IServiceProvider)AppDomain.CurrentDomain.GetData("IServiceProvider");
 
@@ -241,7 +240,6 @@ public class SpaAppDbMigrationService : ITransientDependency
         var sp = scope.CreateScope().ServiceProvider;
         var applicationManager = sp.GetRequiredService<IOpenIddictApplicationManager>();
 
-        // === Swagger клиент ===
         await CreateClientAsync(
             applicationManager,
             name: "SpaApp_Swagger",
@@ -251,7 +249,6 @@ public class SpaAppDbMigrationService : ITransientDependency
             secret: "1q2w3e*"
         );
 
-        // === Angular клиент ===
         await CreateClientAsync(
             applicationManager,
             name: "SpaApp_App",

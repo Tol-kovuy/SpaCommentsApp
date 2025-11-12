@@ -454,7 +454,7 @@ namespace SpaApp.Migrations
                     UserName = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
                     Homepage = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
-                    Text = table.Column<string>(type: "nvarchar(2048)", maxLength: 2048, nullable: false),
+                    Text = table.Column<string>(type: "nvarchar(4000)", maxLength: 4000, nullable: false),
                     FilePath = table.Column<string>(type: "nvarchar(512)", maxLength: 512, nullable: true),
                     FileType = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: true),
                     ExtraProperties = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -471,7 +471,8 @@ namespace SpaApp.Migrations
                         name: "FK_AppComments_AppComments_ParentId",
                         column: x => x.ParentId,
                         principalTable: "AppComments",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -793,6 +794,31 @@ namespace SpaApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "CommentFiles",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    FileName = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
+                    FilePath = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    FileType = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    ContentType = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    FileSize = table.Column<long>(type: "bigint", nullable: false),
+                    Width = table.Column<int>(type: "int", nullable: true),
+                    Height = table.Column<int>(type: "int", nullable: true),
+                    CommentId = table.Column<Guid>(type: "uniqueidentifier", nullable: true),
+                    CreationTime = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CommentFiles", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CommentFiles_AppComments_CommentId",
+                        column: x => x.CommentId,
+                        principalTable: "AppComments",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OpenIddictAuthorizations",
                 columns: table => new
                 {
@@ -1108,9 +1134,34 @@ namespace SpaApp.Migrations
                 column: "UserName");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AppComments_ParentId",
+                name: "IX_Comments_CreationTime",
+                table: "AppComments",
+                column: "CreationTime");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_Email",
+                table: "AppComments",
+                column: "Email");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_ParentId",
                 table: "AppComments",
                 column: "ParentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_ParentId_CreationTime",
+                table: "AppComments",
+                columns: new[] { "ParentId", "CreationTime" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Comments_UserName",
+                table: "AppComments",
+                column: "UserName");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CommentFiles_CommentId",
+                table: "CommentFiles",
+                column: "CommentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OpenIddictApplications_ClientId",
@@ -1225,7 +1276,7 @@ namespace SpaApp.Migrations
                 name: "AbpUserTokens");
 
             migrationBuilder.DropTable(
-                name: "AppComments");
+                name: "CommentFiles");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictScopes");
@@ -1250,6 +1301,9 @@ namespace SpaApp.Migrations
 
             migrationBuilder.DropTable(
                 name: "AbpUsers");
+
+            migrationBuilder.DropTable(
+                name: "AppComments");
 
             migrationBuilder.DropTable(
                 name: "OpenIddictAuthorizations");

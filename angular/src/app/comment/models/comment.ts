@@ -1,26 +1,38 @@
 export interface CommentDto {
   id: string;
-  parentId?: string;
   userName: string;
   email: string;
   homepage?: string;
   text: string;
+  creationTime: string;
+  parentId?: string;
+  replies?: CommentDto[];
+  repliesCount: number;
+  repliesLoaded: boolean;
+  hasReplies: boolean;
+  fileId?: string;
+  fileName?: string;
   filePath?: string;
   fileType?: string;
-  creationTime: string;
-  replies: CommentDto[];
-  repliesCount: number;
-  hasReplies: boolean;
-  repliesLoaded: boolean;
+  contentType?: string;
+  fileSize?: number;
+  width?: number;
+  height?: number;
+  textContent?: string;
+  previewUrl?: string;
+  lastModificationTime?: string;
+  creatorId?: string;
+  lastModifierId?: string;
 }
 
 export interface CreateUpdateCommentDto {
-  parentId?: string;
   userName: string;
   email: string;
   homepage?: string;
   text: string;
   captcha?: string;
+  fileId?: string;
+  parentId?: string;
 }
 
 export interface CommentGetListDto {

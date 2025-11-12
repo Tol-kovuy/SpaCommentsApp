@@ -10,11 +10,10 @@ public class SpaAppApplicationAutoMapperProfile : Profile
     {
         /* Comment mappings */
         CreateMap<Comment, CommentDto>()
-            .ForMember(dest => dest.Replies, opt => opt.MapFrom(src => src.Replies))
-            .ForMember(dest => dest.RepliesCount, opt => opt.Ignore())
-            .ForMember(dest => dest.RepliesLoaded, opt => opt.Ignore());
+            .ForMember(dest => dest.Files, opt => opt.MapFrom(src => src.Files));
 
         CreateMap<CreateUpdateCommentDto, Comment>();
+        CreateMap<CommentFile, CommentFileDto>();
 
         /* You can configure your AutoMapper mapping configuration here.
          * Alternatively, you can split your mapping configurations

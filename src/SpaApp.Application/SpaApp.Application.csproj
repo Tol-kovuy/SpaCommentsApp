@@ -16,12 +16,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SpaApp.Domain\SpaApp.Domain.csproj" />
     <ProjectReference Include="..\SpaApp.Application.Contracts\SpaApp.Application.Contracts.csproj" />
+    <ProjectReference Include="..\SpaApp.Domain\SpaApp.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
     <PackageReference Include="Volo.Abp.AspNetCore.Mvc" Version="9.3.6" />
     <PackageReference Include="Volo.Abp.PermissionManagement.Application" Version="9.3.6" />
     <PackageReference Include="Volo.Abp.FeatureManagement.Application" Version="9.3.6" />

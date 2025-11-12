@@ -37,6 +37,42 @@
                   </div>
                   <div class="comment-text-full">{{comment.text}}</div>
 
+                  <div *ngIf="hasFile(comment)" class="file-attachment">
+                    <div class="file-info">
+                      <span class="file-icon">
+                        {{ getFileType(comment) === 'image' ? '🖼️' : '📄' }}
+                      </span>
+                      <span class="file-name">{{ comment.fileName || 'Attached file' }}</span>
+                      <span *ngIf="comment.fileSize" class="file-size">
+                        ({{ formatFileSize(comment.fileSize) }})
+                      </span>
+
+                      <div *ngIf="isImageFile(comment)" class="image-preview-container">
+                        <div *ngIf="isImageLoading(comment)" class="image-loading">
+                          Loading image...
+                        </div>
+                        <img *ngIf="getImageUrl(comment) && !isImageLoading(comment)"
+                             [src]="getImageUrl(comment)"
+                             (click)="showImagePreview(comment, $event)"
+                             class="image-preview"
+                             alt="Preview"
+                             title="Click to enlarge">
+                        <div *ngIf="!getImageUrl(comment) && !isImageLoading(comment)" class="image-placeholder">
+                          <button class="btn-load-preview"
+                                  (click)="showImagePreview(comment, $event)">
+                            Load Image Preview
+                          </button>
+                        </div>
+                      </div>
+
+                      <button class="btn-view-file"
+                              (click)="$event.stopPropagation(); viewFile(comment, $event)"
+                              title="View full file">
+                        {{ isImageFile(comment) ? '👁️ Full Image' : '👁️ Show Text' }}
+                      </button>
+                    </div>
+                  </div>
+
                   <button class="btn-reply" (click)="$event.stopPropagation(); onShowReplyForm(comment.id)">
                     {{ isReplyingTo(comment.id) ? 'Cancel' : 'Reply' }}
                   </button>

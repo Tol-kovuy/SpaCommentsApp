@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SpaApp.EntityFrameworkCore;
 using Volo.Abp.EntityFrameworkCore;
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace SpaApp.Migrations
 {
     [DbContext(typeof(SpaAppDbContext))]
-    partial class SpaAppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251110160955_Initial")]
+    partial class Initial
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -53,6 +56,14 @@ namespace SpaApp.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
+
+                    b.Property<string>("FilePath")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<string>("FileType")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Homepage")
                         .HasMaxLength(256)
@@ -120,6 +131,7 @@ namespace SpaApp.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("FilePath")
+                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -134,10 +146,6 @@ namespace SpaApp.Migrations
                     b.Property<int?>("Height")
                         .HasColumnType("int");
 
-                    b.Property<string>("TextContent")
-                        .HasMaxLength(4000)
-                        .HasColumnType("nvarchar(4000)");
-
                     b.Property<int?>("Width")
                         .HasColumnType("int");
 
@@ -145,9 +153,6 @@ namespace SpaApp.Migrations
 
                     b.HasIndex("CommentId")
                         .HasDatabaseName("IX_CommentFiles_CommentId");
-
-                    b.HasIndex("FileType")
-                        .HasDatabaseName("IX_CommentFiles_FileType");
 
                     b.ToTable("CommentFiles", (string)null);
                 });
@@ -2024,7 +2029,7 @@ namespace SpaApp.Migrations
                     b.HasOne("SpaApp.Comments.Comment", "Comment")
                         .WithMany("Files")
                         .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("Comment");
                 });

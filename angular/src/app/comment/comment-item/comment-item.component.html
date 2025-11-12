@@ -1,10 +1,30 @@
 <div class="comment-item level-{{level}}">
   <div class="comment-content">
     <div class="comment-header">
-      <strong>{{comment.userName}}</strong>
+      <div class="user-info">
+        <strong class="comment-author">{{comment.userName}}</strong>
+        <span class="comment-email">{{comment.email}}</span>
+      </div>
       <span class="comment-date">{{comment.creationTime | date:'dd.MM.yy в HH:mm'}}</span>
     </div>
+
     <div class="comment-text">{{comment.text}}</div>
+
+    <div *ngIf="hasFile(comment)" class="comment-file">
+      <div class="file-attachment" [class.uploaded]="comment.fileId">
+        <span class="file-icon">
+          {{ getFileType(comment) === 'image' ? '🖼️' : '📄' }}
+        </span>
+        <span class="file-name">{{ comment.fileName || 'Attached file' }}</span>
+        <span *ngIf="comment.fileSize" class="file-size">
+          ({{ formatFileSize(comment.fileSize) }})
+        </span>
+        <span class="file-type-badge">{{ getFileType(comment) }}</span>
+        <button class="btn-view-file" (click)="viewFile(comment)">
+          👁️ {{ getFileType(comment) === 'image' ? 'View Image' : 'View Text' }}
+        </button>
+      </div>
+    </div>
 
     <button class="btn-reply-small" (click)="onShowReplyForm(comment.id)">
       {{ isReplyingTo(comment.id) ? 'Cancel' : 'Reply' }}
@@ -14,13 +34,13 @@
       <div class="form-group">
         <input type="text"
                [value]="getReplyUserName(comment.id)"
-               (input)="onSetReplyUserName(comment.id, $event.target.value)"
+               (input)="onSetReplyUserName(comment.id, $any($event.target).value)"
                placeholder="Your name (optional)"
                class="form-control">
       </div>
       <div class="form-group">
         <textarea [value]="getReplyText(comment.id)"
-                  (input)="onSetReplyText(comment.id, $event.target.value)"
+                  (input)="onSetReplyText(comment.id, $any($event.target).value)"
                   placeholder="Write your reply..."
                   rows="2"
                   class="form-control"></textarea>

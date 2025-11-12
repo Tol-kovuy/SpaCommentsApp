@@ -9,11 +9,11 @@
                id="userName"
                class="form-control"
                formControlName="userName"
-               [attr.disabled]="isSubmitting ? true : null"
                autofocus
                placeholder="Your name">
-        <div *ngIf="commentForm.get('userName')?.invalid && commentForm.get('userName')?.touched" class="error-message">
-          Name is required
+        <div *ngIf="userName?.invalid && userName?.touched" class="error-message">
+          <span *ngIf="userName?.errors?.['required']">Name is required</span>
+          <span *ngIf="userName?.errors?.['minlength']">Name must be at least 2 characters</span>
         </div>
       </div>
 
@@ -23,10 +23,10 @@
                id="email"
                class="form-control"
                formControlName="email"
-               [attr.disabled]="isSubmitting ? true : null"
                placeholder="Your email">
-        <div *ngIf="commentForm.get('email')?.invalid && commentForm.get('email')?.touched" class="error-message">
-          Valid email is required
+        <div *ngIf="email?.invalid && email?.touched" class="error-message">
+          <span *ngIf="email?.errors?.['required']">Email is required</span>
+          <span *ngIf="email?.errors?.['email']">Please enter a valid email address</span>
         </div>
       </div>
 
@@ -36,9 +36,8 @@
                id="homepage"
                class="form-control"
                formControlName="homepage"
-               [attr.disabled]="isSubmitting ? true : null"
                placeholder="Your website (optional)">
-        <div *ngIf="commentForm.get('homepage')?.invalid && commentForm.get('homepage')?.touched" class="error-message">
+        <div *ngIf="homepage?.invalid && homepage?.touched" class="error-message">
           Please enter a valid URL
         </div>
       </div>
@@ -50,29 +49,72 @@
                 class="form-control"
                 rows="5"
                 formControlName="text"
-                [attr.disabled]="isSubmitting ? true : null"
                 placeholder="Your comment"></textarea>
-      <div *ngIf="commentForm.get('text')?.invalid && commentForm.get('text')?.touched" class="error-message">
-        Comment text is required
+      <div *ngIf="text?.invalid && text?.touched" class="error-message">
+        <span *ngIf="text?.errors?.['required']">Comment text is required</span>
+        <span *ngIf="text?.errors?.['minlength']">Comment must be at least 5 characters</span>
       </div>
     </div>
 
+    <!-- File Attachment Section -->
     <div class="form-group">
       <label>File Attachment</label>
-      <div class="file-upload">
+      <div class="file-upload-section">
         <input type="file"
-               id="file"
                #fileInput
                (change)="onFileSelected($event)"
-               [attr.disabled]="isSubmitting ? true : null"
-               style="display: none">
-        <button type="button" class="btn-file" (click)="fileInput.click()" [attr.disabled]="isSubmitting ? true : null">
-          📎 Choose File
+               accept=".jpg,.jpeg,.png,.gif,.txt"
+               class="file-input-hidden">
+
+        <button type="button"
+                class="file-upload-button"
+                (click)="fileInput.click()">
+          📎 Attach File
         </button>
-        <span class="file-name">{{ fileName || 'No file chosen' }}</span>
+
+        <small class="file-hint">
+          Images: JPG, PNG, GIF (max 5MB, will be resized to 320×240px) | Text: TXT only (max 100KB)
+        </small>
+
+        <!-- File Preview -->
+        <div *ngIf="selectedFile" class="file-preview">
+          <div class="file-info">
+            <span class="file-icon">{{ selectedFile.type.startsWith('image/') ? '🖼️' : '📄' }}</span>
+            <div class="file-details">
+              <span class="file-name">{{ selectedFile.name }}</span>
+              <span class="file-size">{{ fileService.formatFileSize(selectedFile.size) }}</span>
+              <span class="file-status pending">⏳ Will upload with comment</span>
+            </div>
+          </div>
+
+          <div class="file-actions">
+            <button type="button"
+                    (click)="previewFile()"
+                    class="btn-preview">
+              👁️ Preview
+            </button>
+
+            <button type="button"
+                    (click)="clearFile()"
+                    class="btn-remove">
+              🗑️ Remove
+            </button>
+          </div>
+
+          <!-- Image preview -->
+          <div *ngIf="filePreview && selectedFile.type.startsWith('image/')" class="image-preview">
+            <img [src]="filePreview" [alt]="selectedFile.name" class="preview-image">
+          </div>
+        </div>
+      </div>
+
+      <!-- File validation errors -->
+      <div *ngIf="fileError" class="error-message file-error">
+        {{ fileError }}
       </div>
     </div>
 
+    <!-- CAPTCHA Section -->
     <div class="form-group">
       <label>CAPTCHA *</label>
       <div class="captcha-section">
@@ -80,34 +122,52 @@
         <input type="text"
                class="form-control"
                formControlName="captcha"
-               placeholder="Enter answer"
-               [attr.disabled]="isSubmitting ? true : null">
-        <div *ngIf="commentForm.get('captcha')?.invalid && commentForm.get('captcha')?.touched" class="error-message">
-          CAPTCHA is required
+               placeholder="Enter answer">
+        <div *ngIf="captcha?.invalid && captcha?.touched" class="error-message">
+          <span *ngIf="captcha?.errors?.['required']">CAPTCHA answer is required</span>
+          <span *ngIf="captcha?.errors?.['pattern']">Please enter the correct answer: 5</span>
         </div>
-        <small style="color: #6c757d; font-size: 12px;">Answer: 5 (temporary)</small>
+        <small class="captcha-hint">Answer: 5</small>
       </div>
     </div>
 
-    <div class="form-actions text-end">
-      <button type="button" class="btn-preview me-2" (click)="togglePreview()" [attr.disabled]="isSubmitting ? true : null">
+    <!-- Form Actions -->
+    <div class="form-actions">
+      <button type="button"
+              class="btn-preview"
+              (click)="togglePreview()"
+              [disabled]="isSubmitting || commentForm.invalid">
         {{ showPreview ? 'Hide Preview' : 'Show Preview' }}
       </button>
-      <button type="submit" class="btn-submit" [disabled]="commentForm.invalid || isSubmitting">
-        <span *ngIf="!isSubmitting">✓</span>
-        <span *ngIf="isSubmitting">⏳</span>
+
+      <button type="submit"
+              class="btn-submit"
+              [disabled]="!canSubmit()">
+        <span class="btn-icon">
+          {{ isSubmitting ? '⏳' : '✓' }}
+        </span>
         {{ isSubmitting ? 'Submitting...' : 'Submit Comment' }}
       </button>
     </div>
   </form>
 
   <!-- Preview Section -->
-  <div *ngIf="showPreview && commentForm.valid" class="preview-section mt-3">
-    <h4>Preview</h4>
+  <div *ngIf="showPreview && commentForm.valid" class="preview-section">
+    <h4>Comment Preview</h4>
     <div class="preview-content card">
       <div class="card-body">
-        <strong>{{ commentForm.get('userName')?.value || 'Anonymous' }}</strong>
-        <p class="mt-2">{{ commentForm.get('text')?.value }}</p>
+        <div class="preview-header">
+          <strong>{{ commentForm.get('userName')?.value || 'Anonymous' }}</strong>
+          <span class="preview-email">{{ commentForm.get('email')?.value }}</span>
+          <span *ngIf="commentForm.get('homepage')?.value" class="preview-homepage">
+            • {{ commentForm.get('homepage')?.value }}
+          </span>
+        </div>
+        <p class="preview-text">{{ commentForm.get('text')?.value }}</p>
+        <div *ngIf="selectedFile" class="preview-file">
+          <small>Attached file: {{ selectedFile.name }}</small>
+          <span class="file-status pending">⏳ Will be uploaded with comment</span>
+        </div>
       </div>
     </div>
   </div>

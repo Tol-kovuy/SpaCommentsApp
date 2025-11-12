@@ -13,8 +13,8 @@ using Volo.Abp.EntityFrameworkCore;
 namespace SpaApp.Migrations
 {
     [DbContext(typeof(SpaAppDbContext))]
-    [Migration("20251104153124_Initial")]
-    partial class Initial
+    [Migration("20251111144426_MakeCommentIdNullableInCommentFiles")]
+    partial class MakeCommentIdNullableInCommentFiles
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -57,14 +57,6 @@ namespace SpaApp.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("ExtraProperties");
 
-                    b.Property<string>("FilePath")
-                        .HasMaxLength(512)
-                        .HasColumnType("nvarchar(512)");
-
-                    b.Property<string>("FileType")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
-
                     b.Property<string>("Homepage")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -82,8 +74,8 @@ namespace SpaApp.Migrations
 
                     b.Property<string>("Text")
                         .IsRequired()
-                        .HasMaxLength(2048)
-                        .HasColumnType("nvarchar(2048)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("UserName")
                         .IsRequired()
@@ -92,9 +84,75 @@ namespace SpaApp.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("CreationTime")
+                        .HasDatabaseName("IX_Comments_CreationTime");
+
+                    b.HasIndex("Email")
+                        .HasDatabaseName("IX_Comments_Email");
+
+                    b.HasIndex("ParentId")
+                        .HasDatabaseName("IX_Comments_ParentId");
+
+                    b.HasIndex("UserName")
+                        .HasDatabaseName("IX_Comments_UserName");
+
+                    b.HasIndex("ParentId", "CreationTime")
+                        .HasDatabaseName("IX_Comments_ParentId_CreationTime");
 
                     b.ToTable("AppComments", (string)null);
+                });
+
+            modelBuilder.Entity("SpaApp.Comments.CommentFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("CommentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContentType")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreationTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<string>("FilePath")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("Height")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TextContent")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<int?>("Width")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommentId")
+                        .HasDatabaseName("IX_CommentFiles_CommentId");
+
+                    b.HasIndex("FileType")
+                        .HasDatabaseName("IX_CommentFiles_FileType");
+
+                    b.ToTable("CommentFiles", (string)null);
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLog", b =>
@@ -1958,9 +2016,20 @@ namespace SpaApp.Migrations
                 {
                     b.HasOne("SpaApp.Comments.Comment", "Parent")
                         .WithMany("Replies")
-                        .HasForeignKey("ParentId");
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("SpaApp.Comments.CommentFile", b =>
+                {
+                    b.HasOne("SpaApp.Comments.Comment", "Comment")
+                        .WithMany("Files")
+                        .HasForeignKey("CommentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Comment");
                 });
 
             modelBuilder.Entity("Volo.Abp.AuditLogging.AuditLogAction", b =>
@@ -2116,6 +2185,8 @@ namespace SpaApp.Migrations
 
             modelBuilder.Entity("SpaApp.Comments.Comment", b =>
                 {
+                    b.Navigation("Files");
+
                     b.Navigation("Replies");
                 });
 

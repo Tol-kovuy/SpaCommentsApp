@@ -23,24 +23,20 @@ public class SpaAppDataSeederContributor : IDataSeedContributor, ITransientDepen
         {
             var comment1 = new Comment
             {
-                UserName = "JohnDoe",
-                Email = "john@example.com",
-                Homepage = "https://example.com",
-                Text = "Это мой первый комментарий!",
-                FilePath = null,
-                FileType = null,
+                UserName = "ghjgh",
+                Email = "ghj@ghj.com",
+                Homepage = "",
+                Text = "first comment!",
                 CreationTime = DateTime.Now
             };
 
             var comment2 = new Comment
             {
-                UserName = "JaneSmith",
-                Email = "jane@example.com",
+                UserName = "ghj",
+                Email = "ghjg@ghjghj.com",
                 Homepage = null,
-                Text = "А это ответ на первый комментарий :)",
+                Text = "answer by first comt",
                 Parent = comment1,
-                FilePath = null,
-                FileType = null,
                 CreationTime = DateTime.Now
             };
 

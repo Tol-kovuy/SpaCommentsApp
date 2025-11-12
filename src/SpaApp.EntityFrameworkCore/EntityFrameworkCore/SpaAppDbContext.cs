@@ -30,6 +30,7 @@ public class SpaAppDbContext :
     /* Add DbSet properties for your Aggregate Roots / Entities here. */
 
     public DbSet<Comment> Comments { get; set; }
+    public DbSet<CommentFile> CommentFiles { get; set; }
 
     #region Entities from the modules
 
@@ -97,22 +98,21 @@ public class SpaAppDbContext :
 
             b.Property(x => x.Text)
                 .IsRequired()
-                .HasMaxLength(4000); // Увеличил для SQL Server
+                .HasMaxLength(4000);
 
             b.Property(x => x.Homepage)
                 .HasMaxLength(256);
-
-            b.Property(x => x.FilePath)
-                .HasMaxLength(512);
-
-            b.Property(x => x.FileType)
-                .HasMaxLength(128);
 
             b.HasOne(x => x.Parent)
                 .WithMany(x => x.Replies)
                 .HasForeignKey(x => x.ParentId)
                 .IsRequired(false)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .OnDelete(DeleteBehavior.Restrict);
+
+            b.HasMany(x => x.Files)
+                .WithOne(x => x.Comment)
+                .HasForeignKey(x => x.CommentId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             b.HasIndex(x => x.ParentId)
                 .HasDatabaseName("IX_Comments_ParentId");
@@ -128,6 +128,56 @@ public class SpaAppDbContext :
 
             b.HasIndex(x => x.Email)
                 .HasDatabaseName("IX_Comments_Email");
+        });
+
+        builder.Entity<CommentFile>(b =>
+        {
+            b.ToTable("CommentFiles");
+            b.HasKey(x => x.Id);
+            b.ConfigureByConvention();
+
+            b.Property(x => x.FileName)
+                .HasMaxLength(255)
+                .IsRequired();
+
+            b.Property(x => x.FilePath)
+                .HasMaxLength(500)
+                .IsRequired(false); 
+
+            b.Property(x => x.TextContent)
+                .HasMaxLength(4000); 
+
+            b.Property(x => x.FileType)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            b.Property(x => x.ContentType)
+                .HasMaxLength(100)
+                .IsRequired(false);
+
+            b.Property(x => x.FileSize)
+                .IsRequired();
+
+            b.Property(x => x.Width)
+                .IsRequired(false);
+
+            b.Property(x => x.Height)
+                .IsRequired(false);
+
+            b.Property(x => x.CommentId)
+                .IsRequired(false); 
+
+            b.HasOne(x => x.Comment)
+             .WithMany(c => c.Files)
+             .HasForeignKey(x => x.CommentId)
+             .IsRequired(false) 
+             .OnDelete(DeleteBehavior.SetNull); 
+
+            b.HasIndex(x => x.CommentId)
+                .HasDatabaseName("IX_CommentFiles_CommentId");
+
+            b.HasIndex(x => x.FileType)
+                .HasDatabaseName("IX_CommentFiles_FileType");
         });
 
         /* Configure your own tables/entities inside here */

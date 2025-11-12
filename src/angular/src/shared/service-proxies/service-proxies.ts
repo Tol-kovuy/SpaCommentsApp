@@ -1995,6 +1995,406 @@ export class ServiceProxy {
     }
 
     /**
+     * @param file (optional) 
+     * @param commentId (optional) 
+     * @return OK
+     */
+    uploadImage(file: FileParameter | undefined, commentId: string | undefined): Observable<FileUploadResultDto> {
+        let url_ = this.baseUrl + "/api/app/file/upload-image";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = new FormData();
+        if (file === null || file === undefined)
+            throw new globalThis.Error("The parameter 'file' cannot be null.");
+        else
+            content_.append("File", file.data, file.fileName ? file.fileName : "File");
+        if (commentId === null || commentId === undefined)
+            throw new globalThis.Error("The parameter 'commentId' cannot be null.");
+        else
+            content_.append("CommentId", commentId.toString());
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUploadImage(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUploadImage(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FileUploadResultDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FileUploadResultDto>;
+        }));
+    }
+
+    protected processUploadImage(response: HttpResponseBase): Observable<FileUploadResultDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = FileUploadResultDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = RemoteServiceErrorResponse.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            }));
+        } else if (status === 401) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = RemoteServiceErrorResponse.fromJS(resultData401);
+            return throwException("Unauthorized", status, _responseText, _headers, result401);
+            }));
+        } else if (status === 403) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result403: any = null;
+            let resultData403 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result403 = RemoteServiceErrorResponse.fromJS(resultData403);
+            return throwException("Forbidden", status, _responseText, _headers, result403);
+            }));
+        } else if (status === 404) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = RemoteServiceErrorResponse.fromJS(resultData404);
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            }));
+        } else if (status === 500) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = RemoteServiceErrorResponse.fromJS(resultData500);
+            return throwException("Internal Server Error", status, _responseText, _headers, result500);
+            }));
+        } else if (status === 501) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result501: any = null;
+            let resultData501 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result501 = RemoteServiceErrorResponse.fromJS(resultData501);
+            return throwException("Not Implemented", status, _responseText, _headers, result501);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @param file (optional) 
+     * @param commentId (optional) 
+     * @return OK
+     */
+    uploadText(file: FileParameter | undefined, commentId: string | undefined): Observable<FileUploadResultDto> {
+        let url_ = this.baseUrl + "/api/app/file/upload-text";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = new FormData();
+        if (file === null || file === undefined)
+            throw new globalThis.Error("The parameter 'file' cannot be null.");
+        else
+            content_.append("File", file.data, file.fileName ? file.fileName : "File");
+        if (commentId === null || commentId === undefined)
+            throw new globalThis.Error("The parameter 'commentId' cannot be null.");
+        else
+            content_.append("CommentId", commentId.toString());
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUploadText(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUploadText(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FileUploadResultDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FileUploadResultDto>;
+        }));
+    }
+
+    protected processUploadText(response: HttpResponseBase): Observable<FileUploadResultDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = FileUploadResultDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = RemoteServiceErrorResponse.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            }));
+        } else if (status === 401) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = RemoteServiceErrorResponse.fromJS(resultData401);
+            return throwException("Unauthorized", status, _responseText, _headers, result401);
+            }));
+        } else if (status === 403) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result403: any = null;
+            let resultData403 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result403 = RemoteServiceErrorResponse.fromJS(resultData403);
+            return throwException("Forbidden", status, _responseText, _headers, result403);
+            }));
+        } else if (status === 404) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = RemoteServiceErrorResponse.fromJS(resultData404);
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            }));
+        } else if (status === 500) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = RemoteServiceErrorResponse.fromJS(resultData500);
+            return throwException("Internal Server Error", status, _responseText, _headers, result500);
+            }));
+        } else if (status === 501) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result501: any = null;
+            let resultData501 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result501 = RemoteServiceErrorResponse.fromJS(resultData501);
+            return throwException("Not Implemented", status, _responseText, _headers, result501);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    fileGET(id: string): Observable<FileDto> {
+        let url_ = this.baseUrl + "/api/app/file/{id}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processFileGET(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processFileGET(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<FileDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<FileDto>;
+        }));
+    }
+
+    protected processFileGET(response: HttpResponseBase): Observable<FileDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = FileDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = RemoteServiceErrorResponse.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            }));
+        } else if (status === 401) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = RemoteServiceErrorResponse.fromJS(resultData401);
+            return throwException("Unauthorized", status, _responseText, _headers, result401);
+            }));
+        } else if (status === 403) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result403: any = null;
+            let resultData403 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result403 = RemoteServiceErrorResponse.fromJS(resultData403);
+            return throwException("Forbidden", status, _responseText, _headers, result403);
+            }));
+        } else if (status === 404) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = RemoteServiceErrorResponse.fromJS(resultData404);
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            }));
+        } else if (status === 500) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = RemoteServiceErrorResponse.fromJS(resultData500);
+            return throwException("Internal Server Error", status, _responseText, _headers, result500);
+            }));
+        } else if (status === 501) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result501: any = null;
+            let resultData501 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result501 = RemoteServiceErrorResponse.fromJS(resultData501);
+            return throwException("Not Implemented", status, _responseText, _headers, result501);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    fileDELETE(id: string): Observable<void> {
+        let url_ = this.baseUrl + "/api/app/file/{id}";
+        if (id === undefined || id === null)
+            throw new globalThis.Error("The parameter 'id' must be defined.");
+        url_ = url_.replace("{id}", encodeURIComponent("" + id));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processFileDELETE(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processFileDELETE(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<void>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<void>;
+        }));
+    }
+
+    protected processFileDELETE(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return _observableOf(null as any);
+            }));
+        } else if (status === 400) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result400: any = null;
+            let resultData400 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result400 = RemoteServiceErrorResponse.fromJS(resultData400);
+            return throwException("Bad Request", status, _responseText, _headers, result400);
+            }));
+        } else if (status === 401) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result401: any = null;
+            let resultData401 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result401 = RemoteServiceErrorResponse.fromJS(resultData401);
+            return throwException("Unauthorized", status, _responseText, _headers, result401);
+            }));
+        } else if (status === 403) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result403: any = null;
+            let resultData403 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result403 = RemoteServiceErrorResponse.fromJS(resultData403);
+            return throwException("Forbidden", status, _responseText, _headers, result403);
+            }));
+        } else if (status === 404) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result404: any = null;
+            let resultData404 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result404 = RemoteServiceErrorResponse.fromJS(resultData404);
+            return throwException("Not Found", status, _responseText, _headers, result404);
+            }));
+        } else if (status === 500) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result500: any = null;
+            let resultData500 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result500 = RemoteServiceErrorResponse.fromJS(resultData500);
+            return throwException("Internal Server Error", status, _responseText, _headers, result500);
+            }));
+        } else if (status === 501) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result501: any = null;
+            let resultData501 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result501 = RemoteServiceErrorResponse.fromJS(resultData501);
+            return throwException("Not Implemented", status, _responseText, _headers, result501);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @param body (optional) 
      * @return OK
      */
@@ -5955,8 +6355,15 @@ export class CommentDto implements ICommentDto {
     email?: string | undefined;
     homepage?: string | undefined;
     text?: string | undefined;
-    filePath?: string | undefined;
+    fileId?: string | undefined;
+    fileName?: string | undefined;
     fileType?: string | undefined;
+    fileSize?: number | undefined;
+    previewUrl?: string | undefined;
+    width?: number | undefined;
+    height?: number | undefined;
+    textContent?: string | undefined;
+    files?: CommentFileDto[] | undefined;
     replies?: CommentDto[] | undefined;
     repliesCount?: number;
     hasReplies?: boolean;
@@ -5983,8 +6390,19 @@ export class CommentDto implements ICommentDto {
             this.email = _data["email"];
             this.homepage = _data["homepage"];
             this.text = _data["text"];
-            this.filePath = _data["filePath"];
+            this.fileId = _data["fileId"];
+            this.fileName = _data["fileName"];
             this.fileType = _data["fileType"];
+            this.fileSize = _data["fileSize"];
+            this.previewUrl = _data["previewUrl"];
+            this.width = _data["width"];
+            this.height = _data["height"];
+            this.textContent = _data["textContent"];
+            if (Array.isArray(_data["files"])) {
+                this.files = [] as any;
+                for (let item of _data["files"])
+                    this.files!.push(CommentFileDto.fromJS(item));
+            }
             if (Array.isArray(_data["replies"])) {
                 this.replies = [] as any;
                 for (let item of _data["replies"])
@@ -6015,8 +6433,19 @@ export class CommentDto implements ICommentDto {
         data["email"] = this.email;
         data["homepage"] = this.homepage;
         data["text"] = this.text;
-        data["filePath"] = this.filePath;
+        data["fileId"] = this.fileId;
+        data["fileName"] = this.fileName;
         data["fileType"] = this.fileType;
+        data["fileSize"] = this.fileSize;
+        data["previewUrl"] = this.previewUrl;
+        data["width"] = this.width;
+        data["height"] = this.height;
+        data["textContent"] = this.textContent;
+        if (Array.isArray(this.files)) {
+            data["files"] = [];
+            for (let item of this.files)
+                data["files"].push(item ? item.toJSON() : undefined as any);
+        }
         if (Array.isArray(this.replies)) {
             data["replies"] = [];
             for (let item of this.replies)
@@ -6040,12 +6469,95 @@ export interface ICommentDto {
     email?: string | undefined;
     homepage?: string | undefined;
     text?: string | undefined;
-    filePath?: string | undefined;
+    fileId?: string | undefined;
+    fileName?: string | undefined;
     fileType?: string | undefined;
+    fileSize?: number | undefined;
+    previewUrl?: string | undefined;
+    width?: number | undefined;
+    height?: number | undefined;
+    textContent?: string | undefined;
+    files?: CommentFileDto[] | undefined;
     replies?: CommentDto[] | undefined;
     repliesCount?: number;
     hasReplies?: boolean;
     repliesLoaded?: boolean;
+}
+
+export class CommentFileDto implements ICommentFileDto {
+    id?: string;
+    fileName?: string | undefined;
+    filePath?: string | undefined;
+    fileType?: string | undefined;
+    contentType?: string | undefined;
+    fileSize?: number;
+    width?: number | undefined;
+    height?: number | undefined;
+    textContent?: string | undefined;
+    previewUrl?: string | undefined;
+    commentId?: string | undefined;
+
+    constructor(data?: ICommentFileDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.fileName = _data["fileName"];
+            this.filePath = _data["filePath"];
+            this.fileType = _data["fileType"];
+            this.contentType = _data["contentType"];
+            this.fileSize = _data["fileSize"];
+            this.width = _data["width"];
+            this.height = _data["height"];
+            this.textContent = _data["textContent"];
+            this.previewUrl = _data["previewUrl"];
+            this.commentId = _data["commentId"];
+        }
+    }
+
+    static fromJS(data: any): CommentFileDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CommentFileDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["fileName"] = this.fileName;
+        data["filePath"] = this.filePath;
+        data["fileType"] = this.fileType;
+        data["contentType"] = this.contentType;
+        data["fileSize"] = this.fileSize;
+        data["width"] = this.width;
+        data["height"] = this.height;
+        data["textContent"] = this.textContent;
+        data["previewUrl"] = this.previewUrl;
+        data["commentId"] = this.commentId;
+        return data;
+    }
+}
+
+export interface ICommentFileDto {
+    id?: string;
+    fileName?: string | undefined;
+    filePath?: string | undefined;
+    fileType?: string | undefined;
+    contentType?: string | undefined;
+    fileSize?: number;
+    width?: number | undefined;
+    height?: number | undefined;
+    textContent?: string | undefined;
+    previewUrl?: string | undefined;
+    commentId?: string | undefined;
 }
 
 export class CreateUpdateCommentDto implements ICreateUpdateCommentDto {
@@ -6055,6 +6567,7 @@ export class CreateUpdateCommentDto implements ICreateUpdateCommentDto {
     homepage?: string | undefined;
     text?: string | undefined;
     captcha?: string | undefined;
+    fileId?: string | undefined;
 
     constructor(data?: ICreateUpdateCommentDto) {
         if (data) {
@@ -6073,6 +6586,7 @@ export class CreateUpdateCommentDto implements ICreateUpdateCommentDto {
             this.homepage = _data["homepage"];
             this.text = _data["text"];
             this.captcha = _data["captcha"];
+            this.fileId = _data["fileId"];
         }
     }
 
@@ -6091,6 +6605,7 @@ export class CreateUpdateCommentDto implements ICreateUpdateCommentDto {
         data["homepage"] = this.homepage;
         data["text"] = this.text;
         data["captcha"] = this.captcha;
+        data["fileId"] = this.fileId;
         return data;
     }
 }
@@ -6102,6 +6617,147 @@ export interface ICreateUpdateCommentDto {
     homepage?: string | undefined;
     text?: string | undefined;
     captcha?: string | undefined;
+    fileId?: string | undefined;
+}
+
+export class FileDto implements IFileDto {
+    id?: string;
+    fileName?: string | undefined;
+    filePath?: string | undefined;
+    fileType?: string | undefined;
+    contentType?: string | undefined;
+    fileSize?: number;
+    width?: number | undefined;
+    height?: number | undefined;
+    content?: string | undefined;
+    textContent?: string | undefined;
+
+    constructor(data?: IFileDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.fileName = _data["fileName"];
+            this.filePath = _data["filePath"];
+            this.fileType = _data["fileType"];
+            this.contentType = _data["contentType"];
+            this.fileSize = _data["fileSize"];
+            this.width = _data["width"];
+            this.height = _data["height"];
+            this.content = _data["content"];
+            this.textContent = _data["textContent"];
+        }
+    }
+
+    static fromJS(data: any): FileDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new FileDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["fileName"] = this.fileName;
+        data["filePath"] = this.filePath;
+        data["fileType"] = this.fileType;
+        data["contentType"] = this.contentType;
+        data["fileSize"] = this.fileSize;
+        data["width"] = this.width;
+        data["height"] = this.height;
+        data["content"] = this.content;
+        data["textContent"] = this.textContent;
+        return data;
+    }
+}
+
+export interface IFileDto {
+    id?: string;
+    fileName?: string | undefined;
+    filePath?: string | undefined;
+    fileType?: string | undefined;
+    contentType?: string | undefined;
+    fileSize?: number;
+    width?: number | undefined;
+    height?: number | undefined;
+    content?: string | undefined;
+    textContent?: string | undefined;
+}
+
+export class FileUploadResultDto implements IFileUploadResultDto {
+    id?: string;
+    fileName?: string | undefined;
+    filePath?: string | undefined;
+    fileType?: string | undefined;
+    fileSize?: number;
+    width?: number | undefined;
+    height?: number | undefined;
+    previewUrl?: string | undefined;
+    textContent?: string | undefined;
+
+    constructor(data?: IFileUploadResultDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.id = _data["id"];
+            this.fileName = _data["fileName"];
+            this.filePath = _data["filePath"];
+            this.fileType = _data["fileType"];
+            this.fileSize = _data["fileSize"];
+            this.width = _data["width"];
+            this.height = _data["height"];
+            this.previewUrl = _data["previewUrl"];
+            this.textContent = _data["textContent"];
+        }
+    }
+
+    static fromJS(data: any): FileUploadResultDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new FileUploadResultDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["id"] = this.id;
+        data["fileName"] = this.fileName;
+        data["filePath"] = this.filePath;
+        data["fileType"] = this.fileType;
+        data["fileSize"] = this.fileSize;
+        data["width"] = this.width;
+        data["height"] = this.height;
+        data["previewUrl"] = this.previewUrl;
+        data["textContent"] = this.textContent;
+        return data;
+    }
+}
+
+export interface IFileUploadResultDto {
+    id?: string;
+    fileName?: string | undefined;
+    filePath?: string | undefined;
+    fileType?: string | undefined;
+    fileSize?: number;
+    width?: number | undefined;
+    height?: number | undefined;
+    previewUrl?: string | undefined;
+    textContent?: string | undefined;
 }
 
 export class ChangePasswordInput implements IChangePasswordInput {
@@ -11593,6 +12249,11 @@ export class IValueValidator implements IIValueValidator {
 export interface IIValueValidator {
     name?: string | undefined;
     properties?: { [key: string]: any; } | undefined;
+}
+
+export interface FileParameter {
+    data: any;
+    fileName: string;
 }
 
 export class ApiException extends Error {

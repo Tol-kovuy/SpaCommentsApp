@@ -27,5 +27,9 @@ export const environment = {
       url: oAuthConfig.issuer,
       rootNamespace: 'AbpAccountPublic',
     },
+    Comment: {
+      url: 'https://localhost:44328', 
+      rootNamespace: 'SpaApp',
+    },
   },
 } as Environment;

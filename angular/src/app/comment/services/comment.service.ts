@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { RestService } from '@abp/ng.core';
 import { CommentDto, CreateUpdateCommentDto, CommentGetListDto } from '../models/comment';
+import { HttpClient } from '@angular/common/http'; 
 
 @Injectable({
   providedIn: 'root'
@@ -9,7 +10,10 @@ import { CommentDto, CreateUpdateCommentDto, CommentGetListDto } from '../models
 export class CommentService {
   private apiUrl = '/api/app/comment';
 
-  constructor(private restService: RestService) { }
+  constructor(
+    private restService: RestService,
+    private http: HttpClient
+  ) { }
 
   getComments(input: CommentGetListDto): Observable<any> {
     return this.restService.request<any, any>({
