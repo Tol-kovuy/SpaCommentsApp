@@ -31,9 +31,17 @@
               <div class="comment-detail">
                 <div class="main-comment">
                   <div class="comment-header">
-                    <strong>{{comment.userName}}</strong>
-                    <span class="email">{{comment.email}}</span>
-                    <span class="date">{{comment.creationTime | date:'dd.MM.yy в HH:mm'}}</span>
+                    <div class="user-info">
+                      <div class="user-avatar">
+                        {{ comment.userName[0].toUpperCase() }}
+                      </div>
+                      <div class="user-details">
+                        <strong class="comment-author">{{comment.userName}}</strong>
+                        <span class="comment-email">{{comment.email}}</span>
+                        <span *ngIf="comment.homepage" class="comment-homepage">• {{comment.homepage}}</span>
+                      </div>
+                    </div>
+                    <span class="comment-date">{{comment.creationTime | date:'dd.MM.yy в HH:mm'}}</span>
                   </div>
                   <div class="comment-text-full">{{comment.text}}</div>
 

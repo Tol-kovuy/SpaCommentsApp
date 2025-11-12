@@ -1,10 +1,85 @@
+<!-- src/app/comment/comment-preview/comment-preview.component.html -->
 <div class="comment-preview" *ngIf="commentData">
-  <h4>Comment Preview</h4>
-  <div class="preview-content">
-    <div class="preview-header">
-      <strong>{{commentData.userName || 'User Name'}}</strong>
-      <span>{{commentData.email || 'email@example.com'}}</span>
+  <div class="preview-header">
+    <h4 class="preview-title">
+      <span class="title-icon">👁️</span>
+      Comment Preview
+    </h4>
+    <div class="preview-badge">LIVE PREVIEW</div>
+  </div>
+
+  <div class="preview-card">
+    <div class="preview-card-header">
+      <div class="user-info">
+        <div class="user-avatar">
+          {{ (commentData.userName || 'User')[0].toUpperCase() }}
+        </div>
+        <div class="user-details">
+          <strong class="user-name">{{commentData.userName || 'Anonymous User'}}</strong>
+          <span class="user-email">{{commentData.email || 'email@example.com'}}</span>
+          <span class="preview-time">Now</span>
+        </div>
+      </div>
+      <div class="preview-indicator">
+        <div class="pulse-dot"></div>
+        <span>Preview</span>
+      </div>
     </div>
-    <div class="preview-text">{{commentData.text || 'No text provided'}}</div>
+
+    <div class="preview-card-body">
+      <div class="comment-text">{{commentData.text || 'No text provided yet...'}}</div>
+
+      <!-- File preview for selected file (before upload) -->
+      <div class="file-preview" *ngIf="selectedFile">
+        <div class="file-attachment" [class.image-attachment]="isImageFile()">
+          <div class="file-icon">
+            {{ isImageFile() ? '🖼️' : '📎' }}
+          </div>
+          <div class="file-info">
+            <span class="file-name">{{ selectedFile.name }}</span>
+            <span class="file-size">{{ formatFileSize(selectedFile.size) }}</span>
+            <span class="file-status">Ready to upload</span>
+          </div>
+
+          <!-- Image preview -->
+          <div class="image-preview" *ngIf="isImageFile() && filePreviewUrl">
+            <img [src]="filePreviewUrl" [alt]="selectedFile.name" class="preview-image">
+          </div>
+        </div>
+      </div>
+
+      <!-- File preview for uploaded file -->
+      <div class="file-preview" *ngIf="commentData.fileId && !selectedFile">
+        <div class="file-attachment">
+          <div class="file-icon">📎</div>
+          <div class="file-info">
+            <span class="file-name">Attached file</span>
+            <span class="file-status">Uploaded</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="preview-card-footer">
+      <div class="preview-stats">
+        <span class="stat">
+          <span class="stat-icon">💬</span>
+          <span class="stat-text">0 replies</span>
+        </span>
+        <span class="stat" *ngIf="selectedFile || commentData.fileId">
+          <span class="stat-icon">📎</span>
+          <span class="stat-text">1 attachment</span>
+        </span>
+        <span class="stat">
+          <span class="stat-icon">👁️</span>
+          <span class="stat-text">Preview mode</span>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="preview-note">
+    <span class="note-icon">💡</span>
+    This is how your comment will appear to others
   </div>
 </div>

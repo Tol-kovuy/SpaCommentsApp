@@ -629,4 +629,9 @@ export class CommentListComponent implements OnInit {
   getFileType(comment: CommentDto): string {
     return comment.fileType || 'unknown';
   }
+
+  getReplyFormComponent(commentId: string): any {
+    // В реальном приложении здесь будет логика создания компонента формы ответа
+    return CommentFormComponent;
+  }
 }

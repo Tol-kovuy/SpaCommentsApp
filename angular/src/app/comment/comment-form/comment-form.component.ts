@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, inject, OnDestroy, ViewChild } from '@angular/core';
+import { Component, Output, EventEmitter, inject, OnDestroy, ViewChild, Input } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommentService } from '../services/comment.service';
 import { CreateUpdateCommentDto } from '../models/comment';
@@ -7,6 +7,7 @@ import { FileService, TextFileUploadResult, FileUploadResult } from '../../servi
 import { LightboxService } from '../../services/lightbox.service';
 import { firstValueFrom } from 'rxjs';
 import { CaptchaComponent } from '../captcha/captcha.component';
+import { CommentPreviewComponent } from '../comment-preview/comment-preview.component';
 
 @Component({
   selector: 'app-comment-form',
@@ -15,12 +16,17 @@ import { CaptchaComponent } from '../captcha/captcha.component';
     CommonModule,
     ReactiveFormsModule,
     CaptchaComponent,
+    CommentPreviewComponent
   ],
   templateUrl: './comment-form.component.html',
   styleUrls: ['./comment-form.component.scss']
 })
 export class CommentFormComponent implements OnDestroy {
   @Output() commentAdded = new EventEmitter<void>();
+  @ViewChild(CaptchaComponent) captchaComp: CaptchaComponent;
+
+  @Input() parentId?: string; 
+  @Input() isReply: boolean = false;
 
   private fileService = inject(FileService);
   private lightboxService = inject(LightboxService);
@@ -36,17 +42,18 @@ export class CommentFormComponent implements OnDestroy {
   fileError: string = '';
   captchaId: string | null = null;
   captchaServerError: string | null = null;
-  @ViewChild(CaptchaComponent) captchaComp: CaptchaComponent;
 
   constructor(
     private fb: FormBuilder
   ) {
+    const captchaValidators = this.isReply ? [] : [Validators.required];
+
     this.commentForm = this.fb.group({
       userName: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       homepage: [''],
       text: ['', [Validators.required, Validators.minLength(5)]],
-      captcha: ['', [Validators.required]]
+      captcha: ['', captchaValidators]
     });
   }
 
@@ -132,11 +139,10 @@ export class CommentFormComponent implements OnDestroy {
   }
 
   async onSubmit(): Promise<void> {
-    console.log('SUBMISSION START');
+    console.log('SUBMISSION START - Is Reply:', this.isReply);
 
     if (this.commentForm.valid && !this.isSubmitting) {
       console.log('Form is valid, proceeding...');
-      console.log('Selected file:', this.selectedFile);
 
       this.isSubmitting = true;
       this.fileError = '';
@@ -146,10 +152,12 @@ export class CommentFormComponent implements OnDestroy {
         const formValue = this.commentForm.value;
         let fileId: string | null = null;
 
-        if (!this.captchaId) {
-          this.captchaServerError = 'CAPTCHA not loaded. Please refresh the page.';
-          this.isSubmitting = false;
-          return;
+        if (!this.isReply) {
+          if (!this.captchaId) {
+            this.captchaServerError = 'CAPTCHA not loaded. Please refresh the page.';
+            this.isSubmitting = false;
+            return;
+          }
         }
 
         if (this.selectedFile) {
@@ -165,9 +173,10 @@ export class CommentFormComponent implements OnDestroy {
           email: formValue.email,
           homepage: formValue.homepage || '',
           text: formValue.text,
-          captcha: formValue.captcha,
-          captchaId: this.captchaId, 
-          fileId: fileId || undefined
+          captcha: this.isReply ? 'not-required-for-replies' : formValue.captcha, 
+          captchaId: this.isReply ? 'not-required-for-replies' : this.captchaId,
+          fileId: fileId || undefined,
+          parentId: this.parentId
         };
 
         console.log('🔍 Final DTO for comment creation:', createCommentDto);
@@ -301,6 +310,25 @@ export class CommentFormComponent implements OnDestroy {
   }
 
   canSubmit(): boolean {
-    return this.commentForm.valid && !this.isSubmitting && !!this.captchaId;
+    if (this.isReply) {
+      return this.commentForm.valid && !this.isSubmitting;
+    } else {
+      return this.commentForm.valid && !this.isSubmitting && !!this.captchaId;
+    }
+  }
+
+  get previewData(): CreateUpdateCommentDto {
+    const formValue = this.commentForm.value;
+
+    return {
+      userName: formValue.userName || '',
+      email: formValue.email || '',
+      homepage: formValue.homepage || '',
+      text: formValue.text || '',
+      captcha: this.isReply ? 'not-required-for-replies' : formValue.captcha || '',
+      captchaId: this.isReply ? 'not-required-for-replies' : this.captchaId || '',
+      fileId: this.uploadedFileId || undefined,
+      parentId: this.parentId
+    };
   }
 }

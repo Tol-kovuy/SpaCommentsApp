@@ -211,32 +211,40 @@ public class CommentAppService :
     [Authorize(SpaAppPermissions.Comments.Create)]
     public override async Task<CommentDto> CreateAsync(CreateUpdateCommentDto input)
     {
-        Logger.LogInformation("Captcha provided: {CaptchaProvided}", !string.IsNullOrEmpty(input.Captcha));
-
-        if (string.IsNullOrEmpty(input.CaptchaId) || string.IsNullOrEmpty(input.Captcha))
+        if (!input.ParentId.HasValue || input.ParentId.Value == Guid.Empty)
         {
-            Logger.LogWarning("CAPTCHA validation failed: CaptchaId or Captcha value is empty");
-            throw new UserFriendlyException("CAPTCHA is required");
+            Logger.LogInformation("Main comment - CAPTCHA validation required");
+
+            if (string.IsNullOrEmpty(input.CaptchaId) || string.IsNullOrEmpty(input.Captcha))
+            {
+                Logger.LogWarning("CAPTCHA validation failed: CaptchaId or Captcha value is empty");
+                throw new UserFriendlyException("CAPTCHA is required for main comments");
+            }
+
+            var captchaService = ServiceProvider.GetRequiredService<ICaptchaService>();
+            bool isCaptchaValid = captchaService.ValidateCaptcha(input.CaptchaId, input.Captcha);
+
+            Logger.LogInformation("CAPTCHA validation result: {IsValid}", isCaptchaValid);
+
+            if (!isCaptchaValid)
+            {
+                Logger.LogWarning("CAPTCHA validation failed: Invalid captcha code");
+                throw new UserFriendlyException("Invalid CAPTCHA. Please try again.");
+            }
+
+            Logger.LogInformation("CAPTCHA validation successful");
         }
-
-        var captchaService = ServiceProvider.GetRequiredService<ICaptchaService>();
-        bool isCaptchaValid = captchaService.ValidateCaptcha(input.CaptchaId, input.Captcha);
-
-        Logger.LogInformation("CAPTCHA validation result: {IsValid}", isCaptchaValid);
-
-        if (!isCaptchaValid)
+        else
         {
-            Logger.LogWarning("CAPTCHA validation failed: Invalid captcha code");
-            throw new UserFriendlyException("Invalid CAPTCHA. Please try again.");
+            Logger.LogInformation("Reply comment - CAPTCHA validation skipped");
         }
-
-        Logger.LogInformation("CAPTCHA validation successful");
 
         var comment = ObjectMapper.Map<CreateUpdateCommentDto, Comment>(input);
 
         await _repository.InsertAsync(comment, autoSave: true);
 
-        Logger.LogInformation("Comment created with Id: {CommentId}", comment.Id);
+        Logger.LogInformation("Comment created with Id: {CommentId}, ParentId: {ParentId}",
+            comment.Id, comment.ParentId);
 
         if (input.FileId.HasValue)
         {

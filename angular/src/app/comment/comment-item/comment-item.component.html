@@ -2,8 +2,13 @@
   <div class="comment-content">
     <div class="comment-header">
       <div class="user-info">
-        <strong class="comment-author">{{comment.userName}}</strong>
-        <span class="comment-email">{{comment.email}}</span>
+        <div class="user-avatar">
+          {{ comment.userName[0].toUpperCase() }}
+        </div>
+        <div class="user-details">
+          <strong class="comment-author">{{comment.userName}}</strong>
+          <span class="comment-email">{{comment.email}}</span>
+        </div>
       </div>
       <span class="comment-date">{{comment.creationTime | date:'dd.MM.yy в HH:mm'}}</span>
     </div>
@@ -11,26 +16,36 @@
     <div class="comment-text">{{comment.text}}</div>
 
     <div *ngIf="hasFile(comment)" class="comment-file">
-      <div class="file-attachment" [class.uploaded]="comment.fileId">
+      <div class="file-attachment" [class.image-attachment]="isImageFile(comment) && getImageUrl(comment)">
         <span class="file-icon">
           {{ getFileType(comment) === 'image' ? '🖼️' : '📄' }}
         </span>
-        <span class="file-name">{{ comment.fileName || 'Attached file' }}</span>
-        <span *ngIf="comment.fileSize" class="file-size">
-          ({{ formatFileSize(comment.fileSize) }})
-        </span>
-        <span class="file-type-badge">{{ getFileType(comment) }}</span>
-        <button class="btn-view-file" (click)="viewFile(comment)">
-          👁️ {{ getFileType(comment) === 'image' ? 'View Image' : 'View Text' }}
-        </button>
+        <div class="file-info">
+          <span class="file-name">{{ comment.fileName || 'Attached file' }}</span>
+          <span *ngIf="comment.fileSize" class="file-size">
+            ({{ formatFileSize(comment.fileSize) }})
+          </span>
+          <span class="file-type-badge">{{ getFileType(comment) }}</span>
+          <button class="btn-view-file" (click)="viewFile(comment, $event)">
+            👁️ {{ getFileType(comment) === 'image' ? 'View' : 'Show' }}
+          </button>
+        </div>
+
+        <!-- Image preview for uploaded images -->
+        <div class="image-preview" *ngIf="isImageFile(comment) && getImageUrl(comment)">
+          <img [src]="getImageUrl(comment)"
+               [alt]="comment.fileName || 'Image'"
+               class="preview-image"
+               (click)="showImagePreview(comment, $event)">
+        </div>
       </div>
     </div>
 
-    <button class="btn-reply-small" (click)="onShowReplyForm(comment.id)">
+    <button class="btn-reply" (click)="onShowReplyForm(comment.id)">
       {{ isReplyingTo(comment.id) ? 'Cancel' : 'Reply' }}
     </button>
 
-    <div *ngIf="isReplyingTo(comment.id)" class="reply-form-small">
+    <div *ngIf="isReplyingTo(comment.id)" class="reply-form">
       <div class="form-group">
         <input type="text"
                [value]="getReplyUserName(comment.id)"
@@ -42,7 +57,7 @@
         <textarea [value]="getReplyText(comment.id)"
                   (input)="onSetReplyText(comment.id, $any($event.target).value)"
                   placeholder="Write your reply..."
-                  rows="2"
+                  rows="3"
                   class="form-control"></textarea>
       </div>
       <div class="form-actions">

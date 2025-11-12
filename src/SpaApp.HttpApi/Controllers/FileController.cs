@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Mvc;
 
-namespace SpaApp.HttpApi.Controllers
+namespace SpaApp.Controllers
 {
     [RemoteService]
     [Route("api/app/file")]

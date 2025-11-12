@@ -1,5 +1,5 @@
 <div class="comment-form-container">
-  <h3>Add Comment</h3>
+  <h3>{{ isReply ? 'Add Reply' : 'Add Comment' }}</h3>
 
   <form class="comment-form" [formGroup]="commentForm" (ngSubmit)="onSubmit()">
     <div class="form-row">
@@ -76,35 +76,11 @@
           Images: JPG, PNG, GIF (max 5MB, will be resized to 320×240px) | Text: TXT only (max 100KB)
         </small>
 
-        <!-- File Preview -->
-        <div *ngIf="selectedFile" class="file-preview">
-          <div class="file-info">
-            <span class="file-icon">{{ selectedFile.type.startsWith('image/') ? '🖼️' : '📄' }}</span>
-            <div class="file-details">
-              <span class="file-name">{{ selectedFile.name }}</span>
-              <span class="file-size">{{ fileService.formatFileSize(selectedFile.size) }}</span>
-              <span class="file-status pending">⏳ Will upload with comment</span>
-            </div>
-          </div>
-
-          <div class="file-actions">
-            <button type="button"
-                    (click)="previewFile()"
-                    class="btn-preview">
-              👁️ Preview
-            </button>
-
-            <button type="button"
-                    (click)="clearFile()"
-                    class="btn-remove">
-              🗑️ Remove
-            </button>
-          </div>
-
-          <!-- Image preview -->
-          <div *ngIf="filePreview && selectedFile.type.startsWith('image/')" class="image-preview">
-            <img [src]="filePreview" [alt]="selectedFile.name" class="preview-image">
-          </div>
+        <!-- Preview Section -->
+        <div *ngIf="showPreview" class="preview-section">
+          <app-comment-preview [commentData]="previewData"
+                               [selectedFile]="selectedFile">
+          </app-comment-preview>
         </div>
       </div>
 
@@ -115,7 +91,7 @@
     </div>
 
     <!-- CAPTCHA Section -->
-    <div class="form-group">
+    <div class="form-group" *ngIf="!isReply">
       <label>CAPTCHA *</label>
       <div class="captcha-section">
         <app-captcha (captchaChanged)="onCaptchaChanged($event)"></app-captcha>
@@ -147,7 +123,7 @@
         <span class="btn-icon">
           {{ isSubmitting ? '⏳' : '✓' }}
         </span>
-        {{ isSubmitting ? 'Submitting...' : 'Submit Comment' }}
+        {{ isSubmitting ? 'Submitting...' : (isReply ? 'Submit Reply' : 'Submit Comment') }}
       </button>
     </div>
   </form>
