@@ -459,6 +459,11 @@ export class CommentFormComponent implements OnDestroy {
   queueStatus: any = null;
   queueStats: any = null;
   private statusCheckInterval: any = null;
+  isQueueTestExpanded = false;
+
+  toggleQueueTestSection(): void {
+    this.isQueueTestExpanded = !this.isQueueTestExpanded;
+  }
 
   testQueue(): void {
     if (!this.captchaId) {

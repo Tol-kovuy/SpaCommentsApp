@@ -538,4 +538,64 @@
     }
   }
 }
+
+.queue-test-header {
+  cursor: pointer;
+  user-select: none;
+  padding: 8px 12px;
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.queue-test-header:hover {
+  background-color: #e9e9e9;
+}
+
+.toggle-icon {
+  font-weight: bold;
+  font-size: 16px;
+  width: 16px;
+  text-align: center;
+}
+
+.queue-test-content {
+  padding: 10px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  background-color: #fafafa;
+}
+
+.test-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.btn-test-queue,
+.btn-queue-stats,
+.btn-clear-tests {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+}
+
+.btn-test-queue:hover:not(:disabled),
+.btn-queue-stats:hover,
+.btn-clear-tests:hover {
+  background: #f0f0f0;
+}
+
+.btn-test-queue:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /*form testing*/
