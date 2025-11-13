@@ -1,4 +1,3 @@
-```markdown
 # SpaApp - Comments Management System
 
 ## Описание
@@ -46,41 +45,41 @@ SpaApp - это многослойное монолитное SPA-приложе
 ## Структура решения
 
 ### Backend проекты
-```
 src/
-├── SpaApp.Application/           # Слой приложения
+├── SpaApp.Application/ # Слой приложения
 ├── SpaApp.Application.Contracts/ # Контракты и DTO
-│   ├── Comments/
-│   │   ├── Dtos/               # Data Transfer Objects
-│   │   └── Models/             # Модели данных
-│   ├── CommentQueue/           # Обработка очереди
-│   ├── CaptchaService.cs       # Сервис CAPTCHA
-│   ├── CommentAppService.cs    # Основной сервис комментариев
-│   └── FileAppService.cs       # Сервис файлов
-├── SpaApp.Domain/              # Доменный слой
-├── SpaApp.EntityFrameworkCore/  # Инфраструктура данных
-├── SpaApp.HttpApi/             # API контроллеры
-├── SpaApp.HttpApi.Client/      # Клиент API
-├── SpaApp.HttpApi.Host/        # Хостинг приложения
-└── SpaApp.DbMigrator/          # Миграции базы данных
-```
+│ ├── Comments/
+│ │ ├── Dtos/ # Data Transfer Objects
+│ │ └── Models/ # Модели данных
+│ ├── CommentQueue/ # Обработка очереди
+│ ├── CaptchaService.cs # Сервис CAPTCHA
+│ ├── CommentAppService.cs # Основной сервис комментариев
+│ └── FileAppService.cs # Сервис файлов
+├── SpaApp.Domain/ # Доменный слой
+├── SpaApp.EntityFrameworkCore/ # Инфраструктура данных
+├── SpaApp.HttpApi/ # API контроллеры
+├── SpaApp.HttpApi.Client/ # Клиент API
+├── SpaApp.HttpApi.Host/ # Хостинг приложения
+└── SpaApp.DbMigrator/ # Миграции базы данных
+
+text
 
 ### Frontend структура
-```
 angular/
 ├── src/app/
-│   ├── comment/                # Модуль комментариев
-│   │   ├── captcha/           # Компонент CAPTCHA
-│   │   ├── comment-form/      # Форма добавления
-│   │   ├── comment-item/      # Элемент комментария
-│   │   ├── comment-list/      # Список комментариев
-│   │   ├── comment-preview/   # Предпросмотр
-│   │   ├── models/           # TypeScript модели
-│   │   └── services/         # Angular сервисы
-│   ├── home/                 # Главная страница
-│   ├── services/             # Общие сервисы
-│   └── app.routes.ts         # Маршрутизация
-```
+│ ├── comment/ # Модуль комментариев
+│ │ ├── captcha/ # Компонент CAPTCHA
+│ │ ├── comment-form/ # Форма добавления
+│ │ ├── comment-item/ # Элемент комментария
+│ │ ├── comment-list/ # Список комментариев
+│ │ ├── comment-preview/ # Предпросмотр
+│ │ ├── models/ # TypeScript модели
+│ │ └── services/ # Angular сервисы
+│ ├── home/ # Главная страница
+│ ├── services/ # Общие сервисы
+│ └── app.routes.ts # Маршрутизация
+
+text
 
 ## Предварительные требования
 
@@ -99,65 +98,60 @@ angular/
 ```bash
 # Установка клиентских зависимостей
 abp install-libs
-```
-
-### 3. Миграция базы данных
-```bash
+3. Миграция базы данных
+bash
 # Запуск мигратора для создания начальной БД
 dotnet run --project src/SpaApp.DbMigrator
-```
-
-### 4. Генерация сертификата подписи (для продакшена)
-```bash
+4. Генерация сертификата подписи (для продакшена)
+bash
 dotnet dev-certs https -v -ep openiddict.pfx -p 96dac333-36eb-472d-80ae-4f8d01ed78b3
-```
+5. Запуск приложения
+Backend:
 
-### 5. Запуск приложения
-
-**Backend:**
-```bash
+bash
 dotnet run --project src/SpaApp.HttpApi.Host
-```
+Frontend:
 
-**Frontend:**
-```bash
+bash
 cd angular
 npm start
-```
+API Endpoints
+Комментарии
+GET /api/app/comment - получение списка с пагинацией и сортировкой
 
-## API Endpoints
+POST /api/app/comment - создание нового комментария
 
-### Комментарии
-* `GET /api/app/comment` - получение списка с пагинацией и сортировкой
-* `POST /api/app/comment` - создание нового комментария
-* `GET /api/app/comment/{id}/replies` - получение ответов
+GET /api/app/comment/{id}/replies - получение ответов
 
-### Файлы
-* `POST /api/app/file/upload` - загрузка файлов
-* `GET /api/app/file/{id}` - скачивание файла
+Файлы
+POST /api/app/file/upload - загрузка файлов
 
-### CAPTCHA
-* `GET /api/app/captcha/generate` - генерация CAPTCHA
-* `POST /api/app/captcha/validate` - валидация ввода
+GET /api/app/file/{id} - скачивание файла
 
-## Деплой
+CAPTCHA
+GET /api/app/captcha/generate - генерация CAPTCHA
 
-Процесс деплоя соответствует стандартному процессу деплоя .NET и Angular приложений. Для детальной информации обратитесь к [документации по деплою ABP](https://abp.io/docs/latest/Deployment/Index).
+POST /api/app/captcha/validate - валидация ввода
 
-## Дополнительные ресурсы
+Деплой
+Процесс деплоя соответствует стандартному процессу деплоя .NET и Angular приложений. Для детальной информации обратитесь к документации по деплою ABP.
 
-### Внутренние ресурсы
-* [Документация по Angular интеграции](https://docs.abp.io/en/abp/latest/UI/Angular/Quick-Start)
+Дополнительные ресурсы
+Внутренние ресурсы
+Документация по Angular интеграции
 
-### Внешние ресурсы
-* [Tutorial по веб-разработке](https://docs.abp.io/en/abp/latest/Tutorials/Part-1)
-* [Application Startup Template](https://docs.abp.io/en/abp/latest/Startup-Templates/Application)
+Внешние ресурсы
+Tutorial по веб-разработке
 
-## Особенности реализации
+Application Startup Template
 
-* DDD архитектура с четким разделением ответственности
-* Модульная структура для легкого расширения функциональности
-* Реактивные формы Angular с комплексной валидацией
-* Поддержка очередей для асинхронной обработки комментариев
-* Полноценная система безопасности на основе ABP Framework
-```
+Особенности реализации
+DDD архитектура с четким разделением ответственности
+
+Модульная структура для легкого расширения функциональности
+
+Реактивные формы Angular с комплексной валидацией
+
+Поддержка очередей для асинхронной обработки комментариев
+
+Полноценная система безопасности на основе ABP Framework
