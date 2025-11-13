@@ -54,11 +54,11 @@ SpaApp - это многослойное монолитное SPA-приложе
     ├─────────────────┤       ├──────────────────┤
     │ • Id (PK) ◄─┐   │       │ • Id (PK)        │
     │ • ParentId  │   │       │ • FileName       │
-    │ • UserName  │   │1    *│ • FileType       │
-    │ • Email     │   └──────┼ • CommentId (FK) │
-    │ • Homepage  │          │ • FileSize       │
-    │ • Text      │          │ • Width          │
-    │ • Creation  │          │ • Height         │
+    │ • UserName  │   │1     *│ • FileType       │
+    │ • Email     │   └───────┼ • CommentId (FK) │
+    │ • Homepage  │           │ • FileSize       │
+    │ • Text      │           │ • Width          │
+    │ • Creation  │           │ • Height         │
     └─────────────────┘       └──────────────────┘
           │
           └◄─ (рекурсивная связь)
