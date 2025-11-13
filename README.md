@@ -1,67 +1,65 @@
-﻿# SpaApp
+# SpaApp
 
-## About this solution
+## О решении
 
-This is a layered startup solution based on [Domain Driven Design (DDD)](https://abp.io/docs/latest/framework/architecture/domain-driven-design) practises. All the fundamental ABP modules are already installed. Check the [Application Startup Template](https://abp.io/docs/latest/solution-templates/layered-web-application) documentation for more info.
+Это многоуровневое стартовое решение, основанное на принципах [Domain Driven Design (DDD)](https://abp.io/docs/latest/framework/architecture/domain-driven-design). Все основные модули ABP уже установлены. Для получения дополнительной информации ознакомьтесь с документацией [Application Startup Template](https://abp.io/docs/latest/solution-templates/layered-web-application).
 
-### Pre-requirements
+### Предварительные требования
 
-* [.NET9.0+ SDK](https://dotnet.microsoft.com/download/dotnet)
-* [Node v18 or 20](https://nodejs.org/en)
+* [.NET 9.0+ SDK](https://dotnet.microsoft.com/download/dotnet)
+* [Node.js v18 или v20](https://nodejs.org/en)
 
-### Configurations
+### Конфигурация
 
-The solution comes with a default configuration that works out of the box. However, you may consider to change the following configuration before running your solution:
+Решение поставляется с конфигурацией по умолчанию, которая работает "из коробки". Однако перед запуском решения вы можете изменить следующие настройки:
 
-* Check the `ConnectionStrings` in `appsettings.json` files under the `SpaApp.HttpApi.Host` and `SpaApp.DbMigrator` projects and change it if you need.
+* Проверьте `ConnectionStrings` в файлах `appsettings.json` в проектах `SpaApp.HttpApi.Host` и `SpaApp.DbMigrator` и при необходимости измените их.
 
-### Before running the application
+### Перед запуском приложения
 
-* Run `abp install-libs` command on your solution folder to install client-side package dependencies. This step is automatically done when you create a new solution, if you didn't especially disabled it. However, you should run it yourself if you have first cloned this solution from your source control, or added a new client-side package dependency to your solution.
-* Run `SpaApp.DbMigrator` to create the initial database. This step is also automatically done when you create a new solution, if you didn't especially disabled it. This should be done in the first run. It is also needed if a new database migration is added to the solution later.
+* Выполните команду `abp install-libs` в папке решения для установки клиентских зависимостей пакетов. Этот шаг выполняется автоматически при создании нового решения, если вы специально не отключили его. Однако вы должны выполнить его самостоятельно, если впервые клонировали это решение из системы контроля версий или добавили новую клиентскую зависимость пакета в свое решение.
+* Запустите `SpaApp.DbMigrator` для создания начальной базы данных. Этот шаг также выполняется автоматически при создании нового решения, если вы специально не отключили его. Это должно быть выполнено при первом запуске. Это также необходимо, если в решение позже добавляется новая миграция базы данных.
 
-#### Generating a Signing Certificate
+#### Генерация сертификата подписи
 
-In the production environment, you need to use a production signing certificate. ABP Framework sets up signing and encryption certificates in your application and expects an `openiddict.pfx` file in your application.
+В производственной среде необходимо использовать производственный сертификат подписи. ABP Framework настраивает сертификаты подписи и шифрования в вашем приложении и ожидает файл `openiddict.pfx` в вашем приложении.
 
-To generate a signing certificate, you can use the following command:
+Для генерации сертификата подписи вы можете использовать следующую команду:
 
 ```bash
 dotnet dev-certs https -v -ep openiddict.pfx -p 96dac333-36eb-472d-80ae-4f8d01ed78b3
-```
 
-> `96dac333-36eb-472d-80ae-4f8d01ed78b3` is the password of the certificate, you can change it to any password you want.
+> `96dac333-36eb-472d-80ae-4f8d01ed78b3` - это пароль сертификата, вы можете изменить его на любой пароль.
 
-It is recommended to use **two** RSA certificates, distinct from the certificate(s) used for HTTPS: one for encryption, one for signing.
+Рекомендуется использовать **два** RSA-сертификата, отличных от сертификатов, используемых для HTTPS: один для шифрования, другой для подписи.
 
-For more information, please refer to: [OpenIddict Certificate Configuration](https://documentation.openiddict.com/configuration/encryption-and-signing-credentials.html#registering-a-certificate-recommended-for-production-ready-scenarios)
+Для получения дополнительной информации обратитесь к: [OpenIddict Certificate Configuration](https://documentation.openiddict.com/configuration/encryption-and-signing-credentials.html#registering-a-certificate-recommended-for-production-ready-scenarios)
 
-> Also, see the [Configuring OpenIddict](https://abp.io/docs/latest/Deployment/Configuring-OpenIddict#production-environment) documentation for more information.
+> Также ознакомьтесь с документацией [Configuring OpenIddict](https://abp.io/docs/latest/Deployment/Configuring-OpenIddict#production-environment) для получения дополнительной информации.
 
-### Solution structure
+### Структура решения
 
-This is a layered monolith application that consists of the following applications:
+Это многоуровневое монолитное приложение, которое состоит из следующих приложений:
 
-* `SpaApp.DbMigrator`: A console application which applies the migrations and also seeds the initial data. It is useful on development as well as on production environment.
-* `SpaApp.HttpApi.Host`: ASP.NET Core API application that is used to expose the APIs to the clients.
-* `angular`: Angular application.
+* `SpaApp.DbMigrator`: Консольное приложение, которое применяет миграции, а также заполняет начальные данные. Оно полезно как в среде разработки, так и в производственной среде.
+* `SpaApp.HttpApi.Host`: Приложение ASP.NET Core API, которое используется для предоставления API клиентам.
+* `angular`: Angular приложение.
 
+## Развертывание приложения
 
-## Deploying the application
+Развертывание приложения ABP следует тому же процессу, что и развертывание любого приложения .NET или ASP.NET Core. Однако есть важные моменты, которые следует учитывать. Для получения подробных инструкций обратитесь к [документации по развертыванию ABP](https://abp.io/docs/latest/Deployment/Index).
 
-Deploying an ABP application follows the same process as deploying any .NET or ASP.NET Core application. However, there are important considerations to keep in mind. For detailed guidance, refer to ABP's [deployment documentation](https://abp.io/docs/latest/Deployment/Index).
+### Дополнительные ресурсы
 
-### Additional resources
+#### Внутренние ресурсы
 
-
-#### Internal Resources
-
-You can find detailed setup and configuration guide(s) for your solution below:
+Вы можете найти подробные руководства по настройке и конфигурации для вашего решения ниже:
 
 * [Angular](./angular/README.md)
 
-#### External Resources
-You can see the following resources to learn more about your solution and the ABP Framework:
+#### Внешние ресурсы
+
+Вы можете ознакомиться со следующими ресурсами, чтобы узнать больше о вашем решении и ABP Framework:
 
 * [Web Application Development Tutorial](https://abp.io/docs/latest/tutorials/book-store/part-1)
 * [Application Startup Template](https://abp.io/docs/latest/startup-templates/application/index)
