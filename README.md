@@ -42,45 +42,6 @@ SpaApp - это многослойное монолитное SPA-приложе
 * Опциональные поля: Домашняя страница (URL)
 * Валидация форматов в реальном времени
 
-## Структура решения
-
-### Backend проекты
-src/
-├── SpaApp.Application/ # Слой приложения
-├── SpaApp.Application.Contracts/ # Контракты и DTO
-│ ├── Comments/
-│ │ ├── Dtos/ # Data Transfer Objects
-│ │ └── Models/ # Модели данных
-│ ├── CommentQueue/ # Обработка очереди
-│ ├── CaptchaService.cs # Сервис CAPTCHA
-│ ├── CommentAppService.cs # Основной сервис комментариев
-│ └── FileAppService.cs # Сервис файлов
-├── SpaApp.Domain/ # Доменный слой
-├── SpaApp.EntityFrameworkCore/ # Инфраструктура данных
-├── SpaApp.HttpApi/ # API контроллеры
-├── SpaApp.HttpApi.Client/ # Клиент API
-├── SpaApp.HttpApi.Host/ # Хостинг приложения
-└── SpaApp.DbMigrator/ # Миграции базы данных
-
-text
-
-### Frontend структура
-angular/
-├── src/app/
-│ ├── comment/ # Модуль комментариев
-│ │ ├── captcha/ # Компонент CAPTCHA
-│ │ ├── comment-form/ # Форма добавления
-│ │ ├── comment-item/ # Элемент комментария
-│ │ ├── comment-list/ # Список комментариев
-│ │ ├── comment-preview/ # Предпросмотр
-│ │ ├── models/ # TypeScript модели
-│ │ └── services/ # Angular сервисы
-│ ├── home/ # Главная страница
-│ ├── services/ # Общие сервисы
-│ └── app.routes.ts # Маршрутизация
-
-text
-
 ## Предварительные требования
 
 * [.NET 9.0+ SDK](https://dotnet.microsoft.com/download/dotnet)
