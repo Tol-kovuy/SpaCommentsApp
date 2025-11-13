@@ -26,6 +26,7 @@ namespace SpaApp.Comments
         private const int MaxImageHeight = 240;
         private const long MaxTextFileSize = 100 * 1024; // 100 KB .txt
         private const long MaxImageFileSize = 5 * 1024 * 1024; // 5 MB for images
+        private const string _fileBase = "/api/app/file/";
 
         public FileAppService(
             IRepository<CommentFile, Guid> fileRepository,
@@ -90,9 +91,7 @@ namespace SpaApp.Comments
                     FileSize = fileEntity.FileSize,
                     Width = fileEntity.Width,
                     Height = fileEntity.Height,
-
-                    // todo: 
-                    PreviewUrl = $"/api/app/file/{fileEntity.Id}"
+                    PreviewUrl = $"{_fileBase}{fileEntity.Id}"
                 };
             }
             catch (UserFriendlyException)
@@ -154,7 +153,7 @@ namespace SpaApp.Comments
                     FileType = fileEntity.FileType,
                     FileSize = fileEntity.FileSize,
                     TextContent = fileEntity.TextContent,
-                    PreviewUrl = $"/api/app/file/{fileEntity.Id}"
+                    PreviewUrl = $"{_fileBase}{fileEntity.Id}"
                 };
             }
             catch (UserFriendlyException)
