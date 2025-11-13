@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SpaApp.CommentQueue;
+using SpaApp.CommentQueue.Dtos;
 using SpaApp.Comments.Dtos;
 using SpaApp.Permissions;
 using System;
@@ -30,15 +32,18 @@ public class CommentAppService :
 {
     private readonly IRepository<Comment, Guid> _repository;
     private readonly IRepository<CommentFile, Guid> _fileRepository;
+    private readonly ICommentQueueService _queueService;
 
     public CommentAppService(
      IRepository<Comment, Guid> repository,
-     IRepository<CommentFile, Guid> fileRepository
+     IRepository<CommentFile, Guid> fileRepository,
+     ICommentQueueService queueService
         ) 
      : base(repository)
     {
         _repository = repository;
-        _fileRepository = fileRepository; 
+        _fileRepository = fileRepository;
+        _queueService = queueService;
     }
 
     [UnitOfWork(isTransactional: false)]
@@ -212,6 +217,62 @@ public class CommentAppService :
         return await AsyncExecuter.CountAsync(
             queryable.Where(x => x.ParentId == commentId)
             );
+    }
+
+    [Authorize(SpaAppPermissions.Comments.Create)]
+    public async Task<CommentQueueResponseDto> CreateQueuedAsync(CreateUpdateCommentDto input)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(input.UserName))
+                throw new UserFriendlyException("User name is required");
+
+            if (string.IsNullOrWhiteSpace(input.Email))
+                throw new UserFriendlyException("Email is required");
+
+            if (string.IsNullOrWhiteSpace(input.Text))
+                throw new UserFriendlyException("Comment text is required");
+
+            var queueId = await _queueService.EnqueueCommentAsync(input);
+
+            Logger.LogInformation("Comment queued successfully. QueueId: {QueueId}", queueId);
+
+            return new CommentQueueResponseDto
+            {
+                QueueId = queueId,
+                Status = "Queued",
+                Message = "Comment is being processed"
+            };
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to queue comment");
+            throw new UserFriendlyException($"Failed to queue comment: {ex.Message}");
+        }
+    }
+
+    [Authorize(SpaAppPermissions.Comments.Default)]
+    public async Task<CommentQueueStatusDto> GetQueueStatusAsync(Guid queueId)
+    {
+        try
+        {
+            var queueItem = await _queueService.GetQueueStatusAsync(queueId);
+
+            return new CommentQueueStatusDto
+            {
+                QueueId = queueItem.Id,
+                Status = queueItem.Status.ToString(),
+                CreatedAt = queueItem.CreatedAt,
+                ProcessedAt = queueItem.ProcessedAt,
+                ErrorMessage = queueItem.ErrorMessage,
+                Result = queueItem.Result
+            };
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to get queue status for {QueueId}", queueId);
+            throw new UserFriendlyException($"Failed to get queue status: {ex.Message}");
+        }
     }
 
     [Authorize(SpaAppPermissions.Comments.Create)]

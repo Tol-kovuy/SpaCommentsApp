@@ -45,7 +45,7 @@
 
     <div class="form-group">
       <div class="text-editor-header">
-        <label for="text">Comment * (max lenght 1000 symbols)</label>
+        <label for="text">Comment *</label>
         <div class="text-editor-controls">
           <button type="button"
                   class="btn-html-toggle"
@@ -96,10 +96,11 @@
       </div>
 
       <textarea id="commentText"
-                class="form-control"
+                class="form-control mb-2"
                 rows="5"
                 formControlName="text"
                 placeholder="Your comment"></textarea>
+      <label for="text">(max comment lenght 1000 symbols)</label>
 
       <!-- Validation HTML -->
       <div *ngIf="showHtmlValidation" class="html-validation">
@@ -194,6 +195,84 @@
       </button>
     </div>
   </form>
+
+  <!--/*methods for testing queue*/-->
+  <div class="queue-test-section" *ngIf="!isReply">
+    <h4>Queue Testing</h4>
+
+    <div class="test-buttons">
+      <button type="button"
+              class="btn-test-queue"
+              (click)="testQueue()"
+              [disabled]="isTestingQueue">
+        {{ isTestingQueue ? 'Testing...' : 'Test Queue' }}
+      </button>
+
+      <button type="button"
+              class="btn-queue-stats"
+              (click)="showQueueStats()">
+        Show Queue Stats
+      </button>
+
+      <button type="button"
+              class="btn-clear-tests"
+              (click)="clearQueueTests()">
+        Clear Tests
+      </button>
+    </div>
+
+    <div *ngIf="queueTestResult" class="queue-test-result">
+      <h5>Queue Test Result:</h5>
+      <pre>{{ queueTestResult | json }}</pre>
+
+      <div *ngIf="currentQueueId" class="queue-status-monitor">
+        <h6>Queue Status Monitor:</h6>
+        <div class="status-item">
+          <strong>Queue ID:</strong> {{ currentQueueId }}
+        </div>
+        <div class="status-item">
+          <strong>Status:</strong>
+          <span [class]="'status-' + (queueStatus?.status?.toLowerCase() || 'unknown')">
+            {{ queueStatus?.status || 'Checking...' }}
+          </span>
+        </div>
+        <div class="status-item" *ngIf="queueStatus?.processedAt">
+          <strong>Processed At:</strong> {{ queueStatus.processedAt | date:'medium' }}
+        </div>
+        <div class="status-item" *ngIf="queueStatus?.errorMessage">
+          <strong>Error:</strong>
+          <span class="error-message">{{ queueStatus.errorMessage }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="queueStats" class="queue-stats">
+      <h5>Queue Statistics:</h5>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-label">Total Items:</span>
+          <span class="stat-value">{{ queueStats.totalItems }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Pending:</span>
+          <span class="stat-value pending">{{ queueStats.pending }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Processing:</span>
+          <span class="stat-value processing">{{ queueStats.processing }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Completed:</span>
+          <span class="stat-value completed">{{ queueStats.completed }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Failed:</span>
+          <span class="stat-value failed">{{ queueStats.failed }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!--/*methods for testing queue*/-->
 
   <!-- Preview Section -->
   <div *ngIf="showPreview && commentForm.valid && isHtmlValid()" class="preview-section">

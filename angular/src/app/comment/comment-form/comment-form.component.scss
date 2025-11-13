@@ -368,3 +368,174 @@
     color: #ffc107;
   }
 }
+
+/*form testing*/
+.queue-test-section {
+  margin-top: 20px;
+  padding: 15px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+
+  h4 {
+    margin-bottom: 15px;
+    color: #495057;
+  }
+}
+
+.test-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+
+  button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .btn-test-queue {
+    background: #007bff;
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: #0056b3;
+    }
+  }
+
+  .btn-queue-stats {
+    background: #28a745;
+    color: white;
+
+    &:hover {
+      background: #218838;
+    }
+  }
+
+  .btn-clear-tests {
+    background: #6c757d;
+    color: white;
+
+    &:hover {
+      background: #5a6268;
+    }
+  }
+}
+
+.queue-test-result {
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  margin-bottom: 15px;
+
+  pre {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    overflow-x: auto;
+  }
+}
+
+.queue-status-monitor {
+  margin-top: 15px;
+  padding: 10px;
+  background: #e7f3ff;
+  border-radius: 4px;
+
+  .status-item {
+    margin-bottom: 8px;
+
+    strong {
+      display: inline-block;
+      width: 100px;
+    }
+  }
+
+  .status-pending {
+    color: #ffc107;
+    font-weight: bold;
+  }
+
+  .status-processing {
+    color: #17a2b8;
+    font-weight: bold;
+  }
+
+  .status-completed {
+    color: #28a745;
+    font-weight: bold;
+  }
+
+  .status-failed {
+    color: #dc3545;
+    font-weight: bold;
+  }
+
+  .error-message {
+    color: #dc3545;
+    background: #f8d7da;
+    padding: 5px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+}
+
+.queue-stats {
+  background: white;
+  padding: 15px;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+
+    .stat-item {
+      text-align: center;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 4px;
+
+      .stat-label {
+        display: block;
+        font-size: 12px;
+        color: #6c757d;
+        margin-bottom: 5px;
+      }
+
+      .stat-value {
+        display: block;
+        font-size: 18px;
+        font-weight: bold;
+
+        &.pending {
+          color: #ffc107;
+        }
+
+        &.processing {
+          color: #17a2b8;
+        }
+
+        &.completed {
+          color: #28a745;
+        }
+
+        &.failed {
+          color: #dc3545;
+        }
+      }
+    }
+  }
+}
+/*form testing*/

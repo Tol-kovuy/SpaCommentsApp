@@ -9,7 +9,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using OpenIddict.Server.AspNetCore;
 using OpenIddict.Validation.AspNetCore;
-using SpaApp.Comments;
 using SpaApp.EntityFrameworkCore;
 using SpaApp.HealthChecks;
 using SpaApp.MultiTenancy;
@@ -113,7 +112,6 @@ public class SpaAppHttpApiHostModule : AbpModule
         ConfigureSwagger(context, configuration);
         ConfigureVirtualFileSystem(context);
         ConfigureCors(context, configuration);
-        context.Services.AddTransient<ICaptchaService, CaptchaService>();
     }
 
     private void ConfigureAuthentication(ServiceConfigurationContext context)

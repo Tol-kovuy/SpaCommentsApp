@@ -63,4 +63,22 @@ export class CommentService {
       url: `${this.apiUrl}/${id}`
     });
   }
+
+  /*methods for testing queue*/
+  createQueued(comment: CreateUpdateCommentDto): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/queued`, comment);
+  }
+
+  getQueueStatus(queueId: string): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/queue/${queueId}/status`);
+  }
+
+  getQueueStats(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/queue-monitor/stats`);
+  }
+
+  getQueueItems(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/queue-monitor/items`);
+  }
+  /*methods for testing queue*/
 }

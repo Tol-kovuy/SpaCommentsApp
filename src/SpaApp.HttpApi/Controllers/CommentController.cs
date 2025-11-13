@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SpaApp.CommentQueue.Dtos;
 using SpaApp.Comments;
 using SpaApp.Comments.Dtos;
 using SpaApp.Permissions;
@@ -76,6 +77,21 @@ namespace SpaApp.Controllers
         public Task DeleteAsync(Guid id)
         {
             return _commentAppService.DeleteAsync(id);
+        }
+
+        [HttpPost("queued")]
+        [IgnoreAntiforgeryToken]
+        [Authorize(SpaAppPermissions.Comments.Create)]
+        public Task<CommentQueueResponseDto> CreateQueuedAsync([FromBody] CreateUpdateCommentDto input)
+        {
+            return _commentAppService.CreateQueuedAsync(input);
+        }
+
+        [HttpGet("queue/{queueId}/status")]
+        [Authorize(SpaAppPermissions.Comments.Default)]
+        public Task<CommentQueueStatusDto> GetQueueStatusAsync(Guid queueId)
+        {
+            return _commentAppService.GetQueueStatusAsync(queueId);
         }
     }
 }

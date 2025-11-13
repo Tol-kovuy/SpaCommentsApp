@@ -1,4 +1,7 @@
-﻿using Volo.Abp.Account;
+﻿using Microsoft.Extensions.DependencyInjection;
+using SpaApp.CommentQueue;
+using SpaApp.Comments;
+using Volo.Abp.Account;
 using Volo.Abp.AspNetCore.Mvc;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.FeatureManagement;
@@ -34,5 +37,8 @@ public class SpaAppApplicationModule : AbpModule
         {
             options.ConventionalControllers.Create(typeof(SpaAppApplicationModule).Assembly);
         });
+
+        context.Services.AddTransient<ICaptchaService, CaptchaService>();
+        context.Services.AddSingleton<ICommentQueueService, CommentQueueService>();
     }
 }

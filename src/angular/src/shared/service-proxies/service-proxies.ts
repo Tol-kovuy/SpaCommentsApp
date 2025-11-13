@@ -1487,6 +1487,116 @@ export class ServiceProxy {
     }
 
     /**
+     * @param body (optional) 
+     * @return OK
+     */
+    queued(body: CreateUpdateCommentDto | undefined): Observable<CommentQueueResponseDto> {
+        let url_ = this.baseUrl + "/api/app/comment/queued";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(body);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processQueued(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processQueued(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<CommentQueueResponseDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<CommentQueueResponseDto>;
+        }));
+    }
+
+    protected processQueued(response: HttpResponseBase): Observable<CommentQueueResponseDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = CommentQueueResponseDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
+     * @return OK
+     */
+    status(queueId: string): Observable<CommentQueueStatusDto> {
+        let url_ = this.baseUrl + "/api/app/comment/queue/{queueId}/status";
+        if (queueId === undefined || queueId === null)
+            throw new globalThis.Error("The parameter 'queueId' must be defined.");
+        url_ = url_.replace("{queueId}", encodeURIComponent("" + queueId));
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processStatus(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processStatus(response_ as any);
+                } catch (e) {
+                    return _observableThrow(e) as any as Observable<CommentQueueStatusDto>;
+                }
+            } else
+                return _observableThrow(response_) as any as Observable<CommentQueueStatusDto>;
+        }));
+    }
+
+    protected processStatus(response: HttpResponseBase): Observable<CommentQueueStatusDto> {
+        const status = response.status;
+        const responseBlob =
+            response instanceof HttpResponse ? response.body :
+            (response as any).error instanceof Blob ? (response as any).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }}
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = CommentQueueStatusDto.fromJS(resultData200);
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap((_responseText: string) => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf(null as any);
+    }
+
+    /**
      * @return OK
      */
     refresh(): Observable<void> {
@@ -6650,6 +6760,106 @@ export interface ICommentDto {
     repliesCount?: number;
     hasReplies?: boolean;
     repliesLoaded?: boolean;
+}
+
+export class CommentQueueResponseDto implements ICommentQueueResponseDto {
+    queueId?: string;
+    status?: string | undefined;
+    message?: string | undefined;
+
+    constructor(data?: ICommentQueueResponseDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.queueId = _data["queueId"];
+            this.status = _data["status"];
+            this.message = _data["message"];
+        }
+    }
+
+    static fromJS(data: any): CommentQueueResponseDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CommentQueueResponseDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["queueId"] = this.queueId;
+        data["status"] = this.status;
+        data["message"] = this.message;
+        return data;
+    }
+}
+
+export interface ICommentQueueResponseDto {
+    queueId?: string;
+    status?: string | undefined;
+    message?: string | undefined;
+}
+
+export class CommentQueueStatusDto implements ICommentQueueStatusDto {
+    queueId?: string;
+    status?: string | undefined;
+    createdAt?: string;
+    processedAt?: string | undefined;
+    errorMessage?: string | undefined;
+    result?: CommentDto;
+
+    constructor(data?: ICommentQueueStatusDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (this as any)[property] = (data as any)[property];
+            }
+        }
+    }
+
+    init(_data?: any) {
+        if (_data) {
+            this.queueId = _data["queueId"];
+            this.status = _data["status"];
+            this.createdAt = _data["createdAt"];
+            this.processedAt = _data["processedAt"];
+            this.errorMessage = _data["errorMessage"];
+            this.result = _data["result"] ? CommentDto.fromJS(_data["result"]) : undefined as any;
+        }
+    }
+
+    static fromJS(data: any): CommentQueueStatusDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CommentQueueStatusDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["queueId"] = this.queueId;
+        data["status"] = this.status;
+        data["createdAt"] = this.createdAt;
+        data["processedAt"] = this.processedAt;
+        data["errorMessage"] = this.errorMessage;
+        data["result"] = this.result ? this.result.toJSON() : undefined as any;
+        return data;
+    }
+}
+
+export interface ICommentQueueStatusDto {
+    queueId?: string;
+    status?: string | undefined;
+    createdAt?: string;
+    processedAt?: string | undefined;
+    errorMessage?: string | undefined;
+    result?: CommentDto;
 }
 
 export class CaptchaValidateDto implements ICaptchaValidateDto {

@@ -441,8 +441,122 @@ export class CommentFormComponent implements OnDestroy {
   get captcha() { return this.commentForm.get('captcha'); }
 
   ngOnDestroy(): void {
+    /*for test*/
+    if (this.statusCheckInterval) {
+      clearInterval(this.statusCheckInterval);
+    }
+    /*rof test*/
+
     if (this.filePreview) {
       this.fileService.revokeObjectURL(this.filePreview);
     }
   }
+
+  /*methods for testing queue*/
+  isTestingQueue = false;
+  queueTestResult: any = null;
+  currentQueueId: string | null = null;
+  queueStatus: any = null;
+  queueStats: any = null;
+  private statusCheckInterval: any = null;
+
+  testQueue(): void {
+    if (!this.captchaId) {
+      alert('Please load and solve CAPTCHA first before testing queue');
+      this.captchaComp?.loadCaptcha();
+      return;
+    }
+
+    const userCaptcha = this.commentForm.get('captcha')?.value;
+    if (!userCaptcha) {
+      alert('Please solve the CAPTCHA first before testing queue');
+      return;
+    }
+
+    this.isTestingQueue = true;
+    this.queueTestResult = null;
+    this.currentQueueId = null;
+    this.queueStatus = null;
+
+    const testData: CreateUpdateCommentDto = {
+      userName: this.commentForm.get('userName')?.value || 'QueueTestUser',
+      email: this.commentForm.get('email')?.value || 'queue-test@example.com',
+      homepage: this.commentForm.get('homepage')?.value || '',
+      text: this.commentForm.get('text')?.value || `Test queue comment at ${new Date().toLocaleTimeString()}`,
+      captcha: userCaptcha,
+      captchaId: this.captchaId
+    };
+
+    console.log('Sending test comment to queue:', testData);
+
+    this.commentService.createQueued(testData).subscribe({
+      next: (response) => {
+        console.log('Comment queued:', response);
+        this.queueTestResult = response;
+        this.currentQueueId = response.queueId;
+        this.isTestingQueue = false;
+
+        this.startStatusMonitoring(response.queueId);
+      },
+      error: (error) => {
+        console.error('Queue error:', error);
+        this.queueTestResult = { error: error.message };
+        this.isTestingQueue = false;
+      }
+    });
+  }
+
+  private startStatusMonitoring(queueId: string): void {
+    if (this.statusCheckInterval) {
+      clearInterval(this.statusCheckInterval);
+    }
+
+    this.statusCheckInterval = setInterval(() => {
+      this.commentService.getQueueStatus(queueId).subscribe({
+        next: (status) => {
+          console.log('📊 Queue status:', status);
+          this.queueStatus = status;
+
+          if (status.status === 'Completed' || status.status === 'Failed') {
+            clearInterval(this.statusCheckInterval);
+            this.statusCheckInterval = null;
+
+            if (status.status === 'Completed' && status.result) {
+              console.log('Comment created via queue:', status.result);
+            }
+          }
+        },
+        error: (error) => {
+          console.error('Status check error:', error);
+          clearInterval(this.statusCheckInterval);
+          this.statusCheckInterval = null;
+        }
+      });
+    }, 1000); 
+  }
+
+  showQueueStats(): void {
+    this.commentService.getQueueStats().subscribe({
+      next: (stats) => {
+        console.log('Queue stats:', stats);
+        this.queueStats = stats;
+      },
+      error: (error) => {
+        console.error('Stats error:', error);
+      }
+    });
+  }
+
+  clearQueueTests(): void {
+    this.queueTestResult = null;
+    this.currentQueueId = null;
+    this.queueStatus = null;
+    this.queueStats = null;
+
+    if (this.statusCheckInterval) {
+      clearInterval(this.statusCheckInterval);
+      this.statusCheckInterval = null;
+    }
+  }
+  /*methods for testing queue*/
 }
