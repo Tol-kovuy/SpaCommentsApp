@@ -90,6 +90,8 @@ namespace SpaApp.Comments
                     FileSize = fileEntity.FileSize,
                     Width = fileEntity.Width,
                     Height = fileEntity.Height,
+
+                    // todo: 
                     PreviewUrl = $"/api/app/file/{fileEntity.Id}"
                 };
             }

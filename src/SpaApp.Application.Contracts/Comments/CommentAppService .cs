@@ -33,6 +33,7 @@ public class CommentAppService :
     private readonly IRepository<Comment, Guid> _repository;
     private readonly IRepository<CommentFile, Guid> _fileRepository;
     private readonly ICommentQueueService _queueService;
+    private const string _fileBase = "/api/app/file/";
 
     public CommentAppService(
      IRepository<Comment, Guid> repository,
@@ -111,12 +112,13 @@ public class CommentAppService :
                     commentDto.FileName = mainFile.FileName;
                     commentDto.FileType = mainFile.FileType;
                     commentDto.FileSize = mainFile.FileSize;
-                    commentDto.PreviewUrl = $"/api/app/file/{mainFile.Id}";
+                    commentDto.PreviewUrl = $"{_fileBase}{mainFile.Id}";
                 }
             }
         }
     }
 
+    // todo: wtf?
     [UnitOfWork(isTransactional: false)]
     public async Task<PagedResultDto<CommentDto>> GetRepliesAsync(GetRepliesRequestDto input)
     {
@@ -182,7 +184,7 @@ public class CommentAppService :
             commentDto.FileName = mainFile.FileName;
             commentDto.FileType = mainFile.FileType;
             commentDto.FileSize = mainFile.FileSize;
-            commentDto.PreviewUrl = $"/api/app/file/{mainFile.Id}";
+            commentDto.PreviewUrl = $"{_fileBase}{mainFile.Id}";
         }
     }
 
@@ -194,7 +196,7 @@ public class CommentAppService :
         var replies = await AsyncExecuter.ToListAsync(
             queryable.Where(x => x.ParentId == commentDto.Id)
                     .OrderBy(x => x.CreationTime)
-                    .Take(50) // maybe moere limit
+                    .Take(50) 
         );
 
         commentDto.Replies = ObjectMapper.Map<List<Comment>, List<CommentDto>>(replies);
@@ -337,7 +339,7 @@ public class CommentAppService :
                 commentDto.FileName = file.FileName;
                 commentDto.FileType = file.FileType;
                 commentDto.FileSize = file.FileSize;
-                commentDto.PreviewUrl = $"/api/app/file/{file.Id}";
+                commentDto.PreviewUrl = $"{_fileBase}{file.Id}";
             }
         }
 
