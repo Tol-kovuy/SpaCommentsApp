@@ -22,20 +22,28 @@ namespace SpaApp.Comments
         public async Task<CaptchaResponseDto> GenerateCaptchaAsync()
         {
             string captchaText = RandomString(6);
+
             var captchaId = Guid.NewGuid().ToString();
             _memoryCache.Set($"captcha:{captchaId}", captchaText, TimeSpan.FromMinutes(10));
+
             using var bmp = new Bitmap(120, 40);
             using var graphics = Graphics.FromImage(bmp);
             graphics.Clear(Color.White);
+
             using var font = new Font("Arial", 20, FontStyle.Bold);
             using var brush = new SolidBrush(Color.Black);
             graphics.DrawString(captchaText, font, brush, 10, 5);
+
             using var ms = new MemoryStream();
             bmp.Save(ms, ImageFormat.Png);
             var imgBytes = ms.ToArray();
             var base64Img = Convert.ToBase64String(imgBytes);
 
-            return new CaptchaResponseDto { CaptchaId = captchaId, Image = $"data:image/png;base64,{base64Img}" };
+            return new CaptchaResponseDto 
+            { 
+                CaptchaId = captchaId, 
+                Image = $"data:image/png;base64,{base64Img}" 
+            };
         }
 
         public bool ValidateCaptcha(string captchaId, string value)

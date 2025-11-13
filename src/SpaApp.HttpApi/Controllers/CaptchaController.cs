@@ -56,21 +56,29 @@ namespace SpaApp.Controllers
         public IActionResult Validate([FromBody] CaptchaValidateDto dto)
         {
             if (!_memoryCache.TryGetValue($"captcha:{dto.CaptchaId}", out string expected))
+            {
                 return BadRequest("Captcha expired or not found");
+            }
 
             _memoryCache.Remove($"captcha:{dto.CaptchaId}");
 
             if (expected?.Trim().ToUpper() == dto.Value?.Trim().ToUpper())
+            {
                 return Ok(new { valid = true });
+            }
 
             return BadRequest(new { valid = false, error = "Invalid captcha" });
         }
 
-        private string RandomString(int length)
+        private static string RandomString(int length)
         {
             var s = new char[length];
+
             for (int i = 0; i < length; i++)
+            {
                 s[i] = chars[random.Next(chars.Length)];
+            }
+
             return new string(s);
         }
     }

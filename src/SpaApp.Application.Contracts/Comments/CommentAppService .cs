@@ -53,7 +53,8 @@ public class CommentAppService :
         {
             parentQuery = parentQuery.Where(x =>
                 x.Text.Contains(input.Filter) ||
-                x.UserName.Contains(input.Filter));
+                x.UserName.Contains(input.Filter)
+                );
         }
 
         var orderedQuery = input.Sorting.IsNullOrWhiteSpace()
@@ -147,7 +148,9 @@ public class CommentAppService :
         var comment = await AsyncExecuter.FirstOrDefaultAsync(queryable.Where(x => x.Id == id));
 
         if (comment == null)
+        {
             throw new UserFriendlyException("Comment not found");
+        }
 
         var commentDto = ObjectMapper.Map<Comment, CommentDto>(comment);
 
@@ -205,7 +208,10 @@ public class CommentAppService :
     private async Task<int> GetRepliesCountAsync(Guid commentId)
     {
         var queryable = await _repository.GetQueryableAsync();
-        return await AsyncExecuter.CountAsync(queryable.Where(x => x.ParentId == commentId));
+
+        return await AsyncExecuter.CountAsync(
+            queryable.Where(x => x.ParentId == commentId)
+            );
     }
 
     [Authorize(SpaAppPermissions.Comments.Create)]

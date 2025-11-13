@@ -68,7 +68,6 @@ export class CommentFormComponent implements OnDestroy {
       captcha: ['', captchaValidators]
     });
 
-    // Валидация HTML при изменении текста
     this.commentForm.get('text')?.valueChanges.subscribe(() => {
       setTimeout(() => this.validateHtml(), 300);
     });
@@ -212,12 +211,10 @@ export class CommentFormComponent implements OnDestroy {
         uploadObservable = this.fileService.uploadTextFile(file);
       }
 
-      // Используем any для обхода проблем с типами
       (uploadObservable as any).subscribe({
         next: (result: any) => {
           console.log('File uploaded successfully:', result);
 
-          // Разные варианты получения fileId в зависимости от типа ответа
           let fileId: string | null = null;
 
           if (result.id) {
@@ -300,7 +297,6 @@ export class CommentFormComponent implements OnDestroy {
     });
   }
 
-  // HTML Validation Methods
   validateHtml(): void {
     const text = this.commentForm.get('text')?.value || '';
     const validation = this.htmlValidator.validateXHTML(text);

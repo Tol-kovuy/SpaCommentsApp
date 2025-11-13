@@ -340,7 +340,6 @@ namespace SpaApp.Comments
 
         private string SanitizeTextContent(string text)
         {
-            // XSS 
             if (string.IsNullOrEmpty(text))
             {
                 return text;
