@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FileService } from '../../services/file.service';
 import { LightboxService } from '../../services/lightbox.service';
 import { firstValueFrom } from 'rxjs';
-import { CaptchaComponent } from '../captcha/captcha.component';
+import { CaptchaComponent } from '../captcha/capt-cha.component';
 import { CommentPreviewComponent } from '../comment-preview/comment-preview.component';
 import { HtmlValidatorService } from '../services/html-validator.service';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';

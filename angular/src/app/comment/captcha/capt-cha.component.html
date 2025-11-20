@@ -1,0 +1,18 @@
+<div class="captcha-container">
+  <div class="captcha-image">
+    <img [src]="imageData"
+         alt="CAPTCHA"
+         *ngIf="!loading && imageData"
+         class="captcha-img">
+    <span *ngIf="loading" class="loading-text">Loading...</span>
+  </div>
+  <div class="captcha-controls">
+    <button type="button"
+            class="btn-refresh"
+            (click)="onRefresh()"
+            title="Refresh CAPTCHA"
+            [disabled]="loading">
+      ↻ Refresh
+    </button>
+  </div>
+</div>
