@@ -10,8 +10,6 @@ using Volo.Abp.Application.Dtos;
 
 namespace SpaApp.Controllers
 {
-
-    [Authorize]
     [Route("api/app/comment")]
     public class CommentController : SpaAppController
     {
@@ -23,28 +21,32 @@ namespace SpaApp.Controllers
         }
 
         [HttpGet]
-        [Authorize(SpaAppPermissions.Comments.Default)]
+        //[Authorize(SpaAppPermissions.Comments.Default)]
+        [AllowAnonymous]
         public Task<PagedResultDto<CommentDto>> GetListAsync([FromQuery] CommentGetListDto input)
         {
             return _commentAppService.GetListAsync(input);
         }
 
         [HttpGet("{id}")]
-        [Authorize(SpaAppPermissions.Comments.Default)]
+        //[Authorize(SpaAppPermissions.Comments.Default)]
+        [AllowAnonymous]
         public Task<CommentDto> GetAsync(Guid id)
         {
             return _commentAppService.GetAsync(id);
         }
 
         [HttpGet("{id}/with-replies")]
-        [Authorize(SpaAppPermissions.Comments.Default)]
+        //[Authorize(SpaAppPermissions.Comments.Default)]
+        [AllowAnonymous]
         public Task<CommentDto> GetWithRepliesAsync(Guid id, [FromQuery] int maxDepth = 3)
         {
             return _commentAppService.GetWithRepliesAsync(id, maxDepth);
         }
 
         [HttpGet("{commentId}/replies")]
-        [Authorize(SpaAppPermissions.Comments.Default)]
+        //[Authorize(SpaAppPermissions.Comments.Default)]
+        [AllowAnonymous]
         public Task<PagedResultDto<CommentDto>> GetRepliesAsync(
             Guid commentId,
             [FromQuery] PagedAndSortedResultRequestDto input)
@@ -59,21 +61,24 @@ namespace SpaApp.Controllers
         }
 
         [HttpPost]
-        [Authorize(SpaAppPermissions.Comments.Create)]
+        //[Authorize(SpaAppPermissions.Comments.Default)]
+        [AllowAnonymous]
         public Task<CommentDto> CreateAsync([FromBody] CreateUpdateCommentDto input)
         {
             return _commentAppService.CreateAsync(input);
         }
 
         [HttpPut("{id}")]
-        [Authorize(SpaAppPermissions.Comments.Edit)]
+        //[Authorize(SpaAppPermissions.Comments.Default)]
+        [AllowAnonymous]
         public Task<CommentDto> UpdateAsync(Guid id, [FromBody] CreateUpdateCommentDto input)
         {
             return _commentAppService.UpdateAsync(id, input);
         }
 
         [HttpDelete("{id}")]
-        [Authorize(SpaAppPermissions.Comments.Delete)]
+        //[Authorize(SpaAppPermissions.Comments.Default)]
+        [AllowAnonymous]
         public Task DeleteAsync(Guid id)
         {
             return _commentAppService.DeleteAsync(id);
@@ -81,14 +86,16 @@ namespace SpaApp.Controllers
 
         [HttpPost("queued")]
         [IgnoreAntiforgeryToken]
-        [Authorize(SpaAppPermissions.Comments.Create)]
+        //[Authorize(SpaAppPermissions.Comments.Default)]
+        [AllowAnonymous]
         public Task<CommentQueueResponseDto> CreateQueuedAsync([FromBody] CreateUpdateCommentDto input)
         {
             return _commentAppService.CreateQueuedAsync(input);
         }
 
         [HttpGet("queue/{queueId}/status")]
-        [Authorize(SpaAppPermissions.Comments.Default)]
+        //[Authorize(SpaAppPermissions.Comments.Default)]
+        [AllowAnonymous]
         public Task<CommentQueueStatusDto> GetQueueStatusAsync(Guid queueId)
         {
             return _commentAppService.GetQueueStatusAsync(queueId);

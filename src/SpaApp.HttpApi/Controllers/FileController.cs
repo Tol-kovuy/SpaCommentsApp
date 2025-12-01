@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using SpaApp.Comments;
 using SpaApp.Comments.Dtos;
@@ -25,6 +26,7 @@ namespace SpaApp.Controllers
         [HttpPost]
         [Route("upload-image")]
         [IgnoreAntiforgeryToken]
+        [AllowAnonymous]
         public async Task<FileUploadResultDto> UploadImageAsync([FromForm] FileUploadFormDto input)
         {
             if (input.File == null || input.File.Length == 0)
@@ -49,6 +51,7 @@ namespace SpaApp.Controllers
         [HttpPost]
         [Route("upload-text")]
         [IgnoreAntiforgeryToken]
+        [AllowAnonymous]
         public async Task<FileUploadResultDto> UploadTextFileAsync([FromForm] FileUploadFormDto input)
         {
             if (input.File == null || input.File.Length == 0)
@@ -96,6 +99,7 @@ namespace SpaApp.Controllers
 
         [HttpGet]
         [Route("{id}")]
+        [AllowAnonymous]
         public async Task<FileDto> GetFileAsync(Guid id)
         {
             return await _fileAppService.GetFileAsync(id);
@@ -103,6 +107,7 @@ namespace SpaApp.Controllers
 
         [HttpDelete]
         [Route("{id}")]
+        [AllowAnonymous]
         public async Task DeleteFileAsync(Guid id)
         {
             await _fileAppService.DeleteFileAsync(id);

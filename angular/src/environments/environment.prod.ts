@@ -1,14 +1,15 @@
 import { Environment } from '@abp/ng.core';
 
-const baseUrl = 'http://localhost:4200';
+const baseUrl = 'http://13.51.161.48';
+const apiUrl = 'http://13.51.161.48' //:5000';
 
 const oAuthConfig = {
-  issuer: 'https://localhost:44328/',
+  issuer: apiUrl + '/',
   redirectUri: baseUrl,
   clientId: 'SpaApp_App',
   responseType: 'code',
   scope: 'offline_access SpaApp',
-  requireHttps: true,
+  requireHttps: false,
 };
 
 export const environment = {
@@ -20,16 +21,16 @@ export const environment = {
   oAuthConfig,
   apis: {
     default: {
-      url: 'https://localhost:44328',
+      url: apiUrl,
       rootNamespace: 'SpaApp',
     },
     AbpAccountPublic: {
-      url: oAuthConfig.issuer,
+      url: apiUrl,
       rootNamespace: 'AbpAccountPublic',
     },
   },
-  remoteEnv: {
-    url: '/getEnvConfig',
-    mergeStrategy: 'deepmerge'
-  }
+  //remoteEnv: {
+  //  url: '/getEnvConfig',
+  //  mergeStrategy: 'deepmerge'
+  //}
 } as Environment;

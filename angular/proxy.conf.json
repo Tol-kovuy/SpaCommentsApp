@@ -4,5 +4,16 @@
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
+  },
+  "/getEnvConfig": {
+    "target": "https://localhost:44328",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  },
+  "/.well-known": {
+    "target": "https://localhost:44328",
+    "secure": false,
+    "changeOrigin": true
   }
 }

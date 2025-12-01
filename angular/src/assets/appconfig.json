@@ -1,0 +1,9 @@
+{
+  "remoteServiceBaseUrl": "http://13.51.161.48:5000",
+  "appBaseUrl": "http://13.51.161.48",
+  "apis": {
+    "default": {
+      "url": "http://13.51.161.48:5000"
+    }
+  }
+}

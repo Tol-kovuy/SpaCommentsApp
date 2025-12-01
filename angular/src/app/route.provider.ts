@@ -22,7 +22,7 @@ function configureRoutes() {
       name: 'Spa Comments',
       iconClass: 'fas fa-comments',
       layout: eLayoutType.application,
-      requiredPolicy: 'SpaApp.Comments',
+      //requiredPolicy: 'SpaApp.Comments',
       order: 2,
     },
   ]);

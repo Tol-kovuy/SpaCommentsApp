@@ -18,7 +18,8 @@ using Volo.Abp.Uow;
 
 namespace SpaApp.Comments;
 
-[Authorize(SpaAppPermissions.Comments.Default)]
+//[Authorize(SpaAppPermissions.Comments.Default)]
+[AllowAnonymous]
 [RemoteService(Name = "Default")]
 public class CommentAppService :
     CrudAppService<
@@ -221,7 +222,7 @@ public class CommentAppService :
             );
     }
 
-    [Authorize(SpaAppPermissions.Comments.Create)]
+    [AllowAnonymous]
     public async Task<CommentQueueResponseDto> CreateQueuedAsync(CreateUpdateCommentDto input)
     {
         try
@@ -253,7 +254,7 @@ public class CommentAppService :
         }
     }
 
-    [Authorize(SpaAppPermissions.Comments.Default)]
+    [AllowAnonymous]
     public async Task<CommentQueueStatusDto> GetQueueStatusAsync(Guid queueId)
     {
         try
@@ -277,7 +278,7 @@ public class CommentAppService :
         }
     }
 
-    [Authorize(SpaAppPermissions.Comments.Create)]
+    [AllowAnonymous]
     public override async Task<CommentDto> CreateAsync(CreateUpdateCommentDto input)
     {
         if (!input.ParentId.HasValue || input.ParentId.Value == Guid.Empty)

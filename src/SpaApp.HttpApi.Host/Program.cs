@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
+using SpaApp.Data;
 
 namespace SpaApp;
 
@@ -65,6 +66,7 @@ public class Program
             app.UseCors("AllowAll"); 
 
             await app.InitializeApplicationAsync();
+            await app.Services.GetRequiredService<SpaAppDbMigrationService>().MigrateAsync();
             await app.RunAsync();
             return 0;
         }

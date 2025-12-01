@@ -1,0 +1,28 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: src/SpaApp.HttpApi.Host/Dockerfile
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./angular
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      SA_PASSWORD: "YourPassword123!"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
