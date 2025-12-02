@@ -1,11 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using SpaApp.Comments;
 using SpaApp.Comments.Dtos;
 using System;
-using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
+using System.Text;
 using Volo.Abp;
 using Volo.Abp.AspNetCore.Mvc;
 
@@ -26,33 +24,26 @@ namespace SpaApp.Controllers
 
         [HttpGet]
         [IgnoreAntiforgeryToken]
+        [AllowAnonymous]
         public IActionResult Get()
         {
             string captchaText = RandomString(6);
             var captchaId = Guid.NewGuid().ToString();
             _memoryCache.Set($"captcha:{captchaId}", captchaText, TimeSpan.FromMinutes(10));
 
-            using var bmp = new Bitmap(120, 40);
-            using var graphics = Graphics.FromImage(bmp);
-            graphics.Clear(Color.White);
-            using var font = new Font("Arial", 20, FontStyle.Bold);
-            using var brush = new SolidBrush(Color.Black);
-            graphics.DrawString(captchaText, font, brush, 10, 5);
-
-            using var ms = new MemoryStream();
-            bmp.Save(ms, ImageFormat.Png);
-            var imgBytes = ms.ToArray();
-            var base64Img = Convert.ToBase64String(imgBytes);
+            string svgImage = GenerateSvgCaptcha(captchaText);
+            string base64Svg = Convert.ToBase64String(Encoding.UTF8.GetBytes(svgImage));
 
             return Ok(new CaptchaResponseDto
             {
                 CaptchaId = captchaId,
-                Image = $"data:image/png;base64,{base64Img}"
+                Image = $"data:image/svg+xml;base64,{base64Svg}"
             });
         }
 
         [HttpPost("validate")]
         [IgnoreAntiforgeryToken]
+        [AllowAnonymous]
         public IActionResult Validate([FromBody] CaptchaValidateDto dto)
         {
             if (!_memoryCache.TryGetValue($"captcha:{dto.CaptchaId}", out string expected))
@@ -80,6 +71,47 @@ namespace SpaApp.Controllers
             }
 
             return new string(s);
+        }
+
+        private string GenerateSvgCaptcha(string text)
+        {
+            var svg = new StringBuilder();
+            svg.AppendLine("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
+            svg.AppendLine("<svg width=\"120\" height=\"40\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">");
+
+            svg.AppendLine("<rect width=\"120\" height=\"40\" fill=\"white\" stroke=\"black\" stroke-width=\"1\"/>");
+
+            for (int i = 0; i < 50; i++)
+            {
+                int x = random.Next(120);
+                int y = random.Next(40);
+                svg.AppendLine($"<circle cx=\"{x}\" cy=\"{y}\" r=\"1\" fill=\"#cccccc\"/>");
+            }
+
+            for (int i = 0; i < 5; i++)
+            {
+                int x1 = random.Next(120);
+                int y1 = random.Next(40);
+                int x2 = random.Next(120);
+                int y2 = random.Next(40);
+                svg.AppendLine($"<line x1=\"{x1}\" y1=\"{y1}\" x2=\"{x2}\" y2=\"{y2}\" stroke=\"#eeeeee\" stroke-width=\"1\"/>");
+            }
+
+            int xPos = 10;
+            foreach (char c in text)
+            {
+                int yOffset = random.Next(-3, 3);
+                int rotation = random.Next(-10, 10);
+                string color = $"rgb({random.Next(50, 150)},{random.Next(50, 150)},{random.Next(50, 150)})";
+
+                svg.AppendLine($"<text x=\"{xPos}\" y=\"{25 + yOffset}\" " +
+                              $"transform=\"rotate({rotation} {xPos} {25 + yOffset})\" " +
+                              $"font-family=\"Arial\" font-size=\"20\" font-weight=\"bold\" fill=\"{color}\">{c}</text>");
+                xPos += 18;
+            }
+
+            svg.AppendLine("</svg>");
+            return svg.ToString();
         }
     }
 }
