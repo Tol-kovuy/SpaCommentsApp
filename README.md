@@ -131,3 +131,5 @@ DDD архитектура с четким разделением ответст
 Поддержка очередей для асинхронной обработки комментариев
 
 Полноценная система безопасности на основе ABP Framework
+
+https://docs.google.com/document/d/1TK_9JXZSPFILYS_xyO-7NRXuiCCPBJBCPHD5OGWiu8U/edit?tab=t.0
